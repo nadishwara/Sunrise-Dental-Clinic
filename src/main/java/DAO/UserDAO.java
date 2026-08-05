@@ -14,7 +14,6 @@ import util.IdGenerator;
 public class UserDAO {
 
     public boolean registerUser(User user) {
-        // SQL Statement (Parameters 6ක් පමණි)
         String sql = "INSERT INTO users (custom_id, username, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?)";
         String updateCustomIdSql = "UPDATE users SET custom_id = ? WHERE user_id = ?";
 
@@ -25,17 +24,16 @@ public class UserDAO {
 
             int generatedUserId = -1;
             String tempCustomId = "TEMP-" + UUID.randomUUID().toString().substring(0, 8);
-            
-            // Password Hash කිරීම
+
             String hashedPassword = BCrypt.withDefaults().hashToString(12, user.getPassword().toCharArray());
-            
+
             try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, tempCustomId);
                 stmt.setString(2, user.getUsername());
                 stmt.setString(3, user.getEmail());
-                stmt.setString(4, hashedPassword); // Fix: Positional parameter 4
-                stmt.setString(5, user.getRole());       // Fix: Positional parameter 5
-                stmt.setString(6, user.getStatus() != null ? user.getStatus() : "ACTIVE"); // Fix: Positional parameter 6
+                stmt.setString(4, hashedPassword);
+                stmt.setString(5, user.getRole());
+                stmt.setString(6, user.getStatus() != null ? user.getStatus() : "ACTIVE");
 
                 int rows = stmt.executeUpdate();
                 if (rows == 0) {
@@ -71,7 +69,11 @@ public class UserDAO {
 
         } catch (SQLException e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             System.err.println("Registration SQL Error: " + e.getMessage());
             e.printStackTrace();
@@ -80,20 +82,24 @@ public class UserDAO {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
-                    conn.close(); 
-                } catch (SQLException ex) { ex.printStackTrace(); }
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
 
     public User authenticateUser(String email, String plainPassword) {
-        String sql = "SELECT u.*, s.staff_id, s.full_name FROM users u " +
-                     "LEFT JOIN staff s ON u.user_id = s.user_id " +
-                     "WHERE u.email = ?";
+        String sql = "SELECT u.*, s.staff_id, s.full_name, "
+               + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
+               + "FROM users u "
+               + "LEFT JOIN staff s ON u.user_id = s.user_id "
+               + "WHERE u.email = ?";
+
         User user = null;
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
 
@@ -106,7 +112,6 @@ public class UserDAO {
                         BCrypt.Result result = BCrypt.verifyer().verify(plainPassword.toCharArray(), storedHashedPassword);
                         isPasswordValid = result.verified;
                     } else {
-                        // Old plaintext passwords support (If needed during dev)
                         isPasswordValid = plainPassword.equals(storedHashedPassword);
                     }
 
@@ -117,6 +122,11 @@ public class UserDAO {
                         user.setUsername(rs.getString("username"));
                         user.setEmail(rs.getString("email"));
                         user.setRole(rs.getString("role"));
+                        user.setStatus(rs.getString("status"));
+
+                        user.setContactNo(rs.getString("final_contact_no"));
+                        user.setWhatsappNo(rs.getString("whatsapp_no"));
+                        user.setAddress(rs.getString("final_address"));
 
                         int staffId = rs.getInt("staff_id");
                         if (!rs.wasNull()) {
@@ -130,5 +140,66 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+
+    public User getUserById(int userId) {
+        String sql = "SELECT u.*, s.full_name, "
+                + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
+                + "COALESCE(u.address, s.address) AS final_address "
+                + "FROM users u "
+                + "LEFT JOIN staff s ON u.user_id = s.user_id "
+                + "WHERE u.user_id = ?";
+        User user = null;
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserId(rs.getInt("user_id"));
+                    user.setCustomId(rs.getString("custom_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+
+                    user.setContactNo(rs.getString("final_contact_no"));
+                    user.setWhatsappNo(rs.getString("whatsapp_no"));
+                    user.setAddress(rs.getString("final_address"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
+    public boolean updateUserProfile(int userId, String username, String email, String newPassword) {
+        boolean hasPasswordUpdate = (newPassword != null && !newPassword.trim().isEmpty());
+
+        String sql = hasPasswordUpdate
+                ? "UPDATE users SET username = ?, email = ?, password_hash = ? WHERE user_id = ?"
+                : "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, email);
+
+            if (hasPasswordUpdate) {
+                String hashedPassword = BCrypt.withDefaults().hashToString(12, newPassword.toCharArray());
+                stmt.setString(3, hashedPassword);
+                stmt.setInt(4, userId);
+            } else {
+                stmt.setInt(3, userId);
+            }
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
