@@ -292,7 +292,6 @@ public class registerF extends javax.swing.JFrame {
         String confirmPassword = confirmPassTextField.getText().trim();
         String selectedRole = jComboBox1.getSelectedItem().toString();
 
-        // 1. Basic Validation for common user fields
         if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill in all primary fields!", "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
@@ -305,7 +304,6 @@ public class registerF extends javax.swing.JFrame {
 
         User newUser = new User(username, email, password, selectedRole);
 
-        // 2. PATIENT Registration Logic
         if (selectedRole.equalsIgnoreCase("PATIENT")) {
             UserDAO userDAO = new UserDAO();
             boolean isRegistered = userDAO.registerUser(newUser);
@@ -318,7 +316,7 @@ public class registerF extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Registration Failed! Email or Username might already exist.", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
-        // 3. STAFF Registration Logic (RECEPTIONIST, DENTIST, ADMIN)
+        //  STAFF Registration Logic (RECEPTIONIST, DENTIST, ADMIN)
         } else {
             String fullName = fullNameTextField.getText().trim();
             String contactNo = contactTextField.getText().trim();

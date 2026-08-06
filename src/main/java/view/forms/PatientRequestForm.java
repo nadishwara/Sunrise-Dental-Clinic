@@ -20,18 +20,20 @@ public class PatientRequestForm extends javax.swing.JPanel {
      * Creates new form PatientRequestForm
      */
     private AppointmentRequestDAO dao;
+    private List<Model_AppointmentRequest> listRequests;
+
     public PatientRequestForm() {
         initComponents();
         dao = new AppointmentRequestDAO();
         loadTableData();
     }
-    
+
     public void loadTableData() {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
-        
+
         List<Model_AppointmentRequest> requests = dao.getAllRequests();
-        
+
         for (Model_AppointmentRequest req : requests) {
             model.addRow(new Object[]{
                 req.getRequestId(),
@@ -45,16 +47,16 @@ public class PatientRequestForm extends javax.swing.JPanel {
             });
         }
     }
-    
+
     private void updateSelectedStatus(String newStatus) {
         int selectedRow = jTable1.getSelectedRow();
         if (selectedRow != -1) {
             int requestId = (int) jTable1.getValueAt(selectedRow, 0);
-            
-            int confirm = JOptionPane.showConfirmDialog(this, 
-                "Are you sure you want to mark Request ID " + requestId + " as " + newStatus + "?", 
-                "Confirm Action", 
-                JOptionPane.YES_NO_OPTION);
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Are you sure you want to mark Request ID " + requestId + " as " + newStatus + "?",
+                    "Confirm Action",
+                    JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
                 if (dao.updateStatus(requestId, newStatus)) {
@@ -65,10 +67,10 @@ public class PatientRequestForm extends javax.swing.JPanel {
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(this, 
-                "Please select a row from the table first!", 
-                "No Selection", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Please select a row from the table first!",
+                    "No Selection",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -170,7 +172,47 @@ public class PatientRequestForm extends javax.swing.JPanel {
 
     private void ScheduleAbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ScheduleAbtnActionPerformed
         // TODO add your handling code here:
+        try {
+        int selectedRow = jTable1.getSelectedRow();
         
+        if (selectedRow != -1) {
+            Object idObj = jTable1.getValueAt(selectedRow, 0);
+            if (idObj == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Selected row has invalid ID!");
+                return;
+            }
+            int requestId = Integer.parseInt(idObj.toString());
+
+            String patientCustomId = jTable1.getValueAt(selectedRow, 1) != null ? jTable1.getValueAt(selectedRow, 1).toString() : "";
+            String patientName = jTable1.getValueAt(selectedRow, 2) != null ? jTable1.getValueAt(selectedRow, 2).toString() : "";
+            
+            java.sql.Date preferredDate = null;
+            Object dateObj = jTable1.getValueAt(selectedRow, 3);
+            if (dateObj instanceof java.sql.Date) {
+                preferredDate = (java.sql.Date) dateObj;
+            } else if (dateObj != null) {
+                try {
+                    preferredDate = java.sql.Date.valueOf(dateObj.toString());
+                } catch (Exception e) {
+                }
+            }
+
+            String preferredTimeSlot = jTable1.getValueAt(selectedRow, 4) != null ? jTable1.getValueAt(selectedRow, 4).toString() : "";
+
+            Model_AppointmentRequest selectedRequest = new Model_AppointmentRequest(
+                requestId, patientCustomId, patientName, "", preferredDate, preferredTimeSlot, "", "", ""
+            );
+            ScheduleAppointmentDialog dialog = new ScheduleAppointmentDialog(selectedRequest);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "Please select an appointment request from the table first.");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        javax.swing.JOptionPane.showMessageDialog(this, "Error opening dialog: " + e.getMessage());
+    }
     }//GEN-LAST:event_ScheduleAbtnActionPerformed
 
 

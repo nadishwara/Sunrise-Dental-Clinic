@@ -126,7 +126,7 @@ public class UserDAO {
 
                         user.setContactNo(rs.getString("final_contact_no"));
                         user.setWhatsappNo(rs.getString("whatsapp_no"));
-                        user.setAddress(rs.getString("final_address"));
+                        user.setAddress(rs.getString("address"));
 
                         int staffId = rs.getInt("staff_id");
                         if (!rs.wasNull()) {
@@ -145,7 +145,7 @@ public class UserDAO {
     public User getUserById(int userId) {
         String sql = "SELECT u.*, s.full_name, "
                 + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
-                + "COALESCE(u.address, s.address) AS final_address "
+                + "COALESCE(u.address, s.address) AS address "
                 + "FROM users u "
                 + "LEFT JOIN staff s ON u.user_id = s.user_id "
                 + "WHERE u.user_id = ?";
@@ -166,7 +166,7 @@ public class UserDAO {
 
                     user.setContactNo(rs.getString("final_contact_no"));
                     user.setWhatsappNo(rs.getString("whatsapp_no"));
-                    user.setAddress(rs.getString("final_address"));
+                    user.setAddress(rs.getString("address"));
                 }
             }
         } catch (SQLException e) {

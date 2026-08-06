@@ -17,6 +17,9 @@ public class User {
     private String status;
     private int staffId;
     private String customId;
+    private String contact_no;
+    private String whatsapp_no;
+    private String address;
 
     public User() {}
     
@@ -67,5 +70,14 @@ public class User {
 
     public String getCustomId() {return customId;}
     public void setCustomId(String customId) { this.customId=customId;}
+
+    public String getContactNo() {return contact_no;}
+    public void setContactNo(String contactNo) { this.contact_no=contactNo;}
+
+    public String getWhatsappNo() {return whatsapp_no;}
+    public void setWhatsappNo(String whatsappNo) { this.whatsapp_no=whatsappNo;}
+    
+    public String getAddress() {return address;}
+    public void setAddress(String address) { this.address=address;}
     
 }

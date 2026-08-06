@@ -138,7 +138,6 @@ public class loginF extends javax.swing.JFrame {
          String email = jTextField1.getText().trim();
         String password = jPasswordField1.getText().trim();
         
-        // 1. Validation Logic Check
         if (email.isEmpty() || password.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
@@ -153,7 +152,6 @@ public class loginF extends javax.swing.JFrame {
         User loggedUser = userDAO.authenticateUser(email, password);
             
         if (loggedUser != null) {
-            // Success Popup Message
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
                 "Login Successful! Welcome " + loggedUser.getUsername() + " (" + loggedUser.getRole() + ")", 
@@ -169,7 +167,6 @@ public class loginF extends javax.swing.JFrame {
                 this.dispose();
         
         } else {
-            // Failure Popup Message
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
                 "Invalid Email or Password!", 

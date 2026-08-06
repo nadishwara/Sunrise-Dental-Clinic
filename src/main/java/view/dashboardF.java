@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import model.User;
+import view.forms.PatientRequestForm;
 
 /**
  *
@@ -24,6 +25,10 @@ public class dashboardF extends javax.swing.JFrame {
     private User loggedInUser;
     private CardLayout cardLayout;
     private JPanel mainPanel;
+    private PatientRequestForm patientRequestView;
+    private view.forms.UserProfile userProfileView;
+    private view.forms.NewBookings newBookingsView;
+    private view.forms.WelcomePage newWelcomePage;
 
     public dashboardF() {
         initComponents();
@@ -36,8 +41,11 @@ public class dashboardF extends javax.swing.JFrame {
         initComponents();
         makeCornersRounded();
         init();
+        if (user != null) {
+            menu1.setUserProfile(user);
+        }
     }
-    
+
     private void makeCornersRounded() {
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -59,97 +67,107 @@ public class dashboardF extends javax.swing.JFrame {
         panelBorder1.add(menu1, java.awt.BorderLayout.WEST);
         panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
 
+        patientRequestView = new view.forms.PatientRequestForm();
+
         initViews();
 
         menu1.addEventMenuSelected(new swing.EventMenuSelected() {
             @Override
             public void selected(int index) {
-                switch (index) {
-                    case 0: 
-                        cardLayout.show(mainPanel, "HOME");
-                        break;
-                    case 1:
-                        cardLayout.show(mainPanel, "PROFILE");
-                        break;
-                    case 2:
-                        if (loggedInUser != null && "DOCTOR".equalsIgnoreCase(loggedInUser.getRole())) {
-                            cardLayout.show(mainPanel, "PATIENTS_DOCTOR");
-                        } else {
-                            cardLayout.show(mainPanel, "PATIENTS_GENERAL");
-                        }
-                        break;
-                    case 5: 
-                        int opt = JOptionPane.showConfirmDialog(
-                                null, 
-                                "Are you sure you want to Logout?", 
-                                "Logout Confirmation", 
-                                JOptionPane.YES_NO_OPTION
-                        );
-                        if (opt == JOptionPane.YES_OPTION) {
-                            new loginF().setVisible(true);
-                            dispose();
-                        }
-                        break;
-                    default:
-                        break;
+                User currentUser = menu1.getLoggedInUser() != null ? menu1.getLoggedInUser() : loggedInUser;
+                String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
+
+                boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
+
+                int logoutIndex = isReceptionist ? 5 : 4;
+                int dateTableIndex = isReceptionist ? 4 : 3;
+
+                if (index == 0) {
+                    cardLayout.show(mainPanel, "HOME");
+                } else if (index == 1) {
+                    cardLayout.show(mainPanel, "PROFILE");
+                } else if (index == 2) {
+                    if (isReceptionist) {
+                        cardLayout.show(mainPanel, "NEW_BOOKING");
+                    } else if ("DOCTOR".equalsIgnoreCase(role)) {
+                        cardLayout.show(mainPanel, "PATIENTS_DOCTOR");
+                    } else {
+                        cardLayout.show(mainPanel, "PATIENTS_GENERAL");
+                    }
+                } else if (isReceptionist && index == 3) {
+                    patientRequestView.loadTableData();
+                    cardLayout.show(mainPanel, "PATIENT_REQUEST");
+                } else if (index == dateTableIndex) {
+                    cardLayout.show(mainPanel, "DATE_TABLE");
+                } else if (index == logoutIndex) {
+                    int opt = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to Logout?",
+                            "Logout Confirmation",
+                            JOptionPane.YES_NO_OPTION
+                    );
+                    if (opt == JOptionPane.YES_OPTION) {
+                        new loginF().setVisible(true);
+                        dispose();
+                    }
                 }
             }
         });
 
         cardLayout.show(mainPanel, "HOME");
-        
+
         if (loggedInUser != null) {
-        String username = loggedInUser.getUsername();
-        String role = loggedInUser.getRole(); 
-        
-        menu1.setUserProfile(username, role);
-    } else {
-        menu1.setUserProfile("Guest User", "N/A");
-    }
+            String username = loggedInUser.getUsername();
+            String role = loggedInUser.getRole();
+
+            menu1.setUserProfile(username, role);
+        } else {
+            menu1.setUserProfile("Guest User", "N/A");
+        }
     }
 
-    /**
-     * Dashboard Center Panel එකට අවශ්‍ය Views / Forms එකතු කරන ස්ථානය
-     */
     private void initViews() {
-        // Dummy Views (පසුව ඔබේ නියම JPanel Classes වලින් මේවා replace කරන්න)
-        
-        // Home Panel
         JPanel homeView = new JPanel();
         homeView.setOpaque(false);
         JLabel lblHome = new JLabel("Welcome to Dashboard Home!");
         lblHome.setForeground(Color.WHITE);
         homeView.add(lblHome);
 
-        // Profile Panel
-        JPanel profileView = new JPanel();
-        profileView.setOpaque(false);
-        String username = (loggedInUser != null) ? loggedInUser.getUsername() : "Guest";
-        JLabel lblProfile = new JLabel("User Profile: " + username);
-        lblProfile.setForeground(Color.WHITE);
-        profileView.add(lblProfile);
+        userProfileView = new view.forms.UserProfile();
+        if (loggedInUser != null) {
+            userProfileView.setUserData(loggedInUser);
+        }
 
-        // Patients Panel (Doctor)
         JPanel doctorPatientView = new JPanel();
         doctorPatientView.setOpaque(false);
         JLabel lblDoc = new JLabel("Doctor View: Assigned Patient Records");
         lblDoc.setForeground(Color.WHITE);
         doctorPatientView.add(lblDoc);
 
-        // Patients Panel (General/Receptionist)
         JPanel generalPatientView = new JPanel();
         generalPatientView.setOpaque(false);
         JLabel lblGen = new JLabel("General View: All Patient Records");
         lblGen.setForeground(Color.WHITE);
         generalPatientView.add(lblGen);
 
-        // Cards mainPanel එකට Register කිරීම
-        mainPanel.add(homeView, "HOME");
-        mainPanel.add(profileView, "PROFILE");
+        patientRequestView = new view.forms.PatientRequestForm();
+
+        newBookingsView = new view.forms.NewBookings();
+        newWelcomePage = new view.forms.WelcomePage();
+
+        javax.swing.JScrollPane newBookingsScrollPane = new javax.swing.JScrollPane(newBookingsView);
+        newBookingsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        newBookingsScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        newBookingsScrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        newBookingsScrollPane.setBorder(null);
+
+        mainPanel.add(newWelcomePage, "HOME");
+        mainPanel.add(userProfileView, "PROFILE");
         mainPanel.add(doctorPatientView, "PATIENTS_DOCTOR");
         mainPanel.add(generalPatientView, "PATIENTS_GENERAL");
+        mainPanel.add(newBookingsScrollPane, "NEW_BOOKING");
+        mainPanel.add(patientRequestView, "PATIENT_REQUEST");
     }
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -171,8 +189,8 @@ public class dashboardF extends javax.swing.JFrame {
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addComponent(menu1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 792, Short.MAX_VALUE))
+                .addComponent(menu1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 863, Short.MAX_VALUE))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -197,7 +215,7 @@ public class dashboardF extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-       try {
+        try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -208,7 +226,6 @@ public class dashboardF extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(dashboardF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new dashboardF().setVisible(true);

@@ -11,8 +11,12 @@ import java.awt.event.MouseMotionAdapter;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import model.Model_Menu;
+import model.User;
 
 public class Menu extends javax.swing.JPanel {
+
+    private String userRole = "";
+    private User loggedInUser;
 
     public Menu() {
         initComponents();
@@ -21,30 +25,56 @@ public class Menu extends javax.swing.JPanel {
         jPanel1.setOpaque(false);
         userLable.setForeground(Color.WHITE);
         roleLabel.setForeground(new Color(220, 220, 220));
-        init();
     }
 
-    private void init() {
+    public void initMenu(String role) {
+        this.userRole = (role != null) ? role : "";
+
+        listMenu1.clear();
+
         listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("2", "User Profile", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("4", "Patient Request", Model_Menu.MenuType.MENU));
+
+        if ("RECEPTIONIST".equalsIgnoreCase(userRole)) {
+            listMenu1.addItem(new Model_Menu("4", "Patient Request", Model_Menu.MenuType.MENU));
+        }
+
         listMenu1.addItem(new Model_Menu("5", "Date Table", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("10", "Logout", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
+    }
+
+    public void setUserProfile(String username, String role) {
+        if (userLable != null) {
+            userLable.setText(username != null ? username : "User");
+        }
+        if (roleLabel != null) {
+            roleLabel.setText(role != null ? role : "");
+        }
+
+        initMenu(role);
     }
 
     public void addEventMenuSelected(swing.EventMenuSelected event) {
         listMenu1.addEventMenuSelected(event);
     }
 
-    public void setUserProfile(String username, String role) {
-        if (userLable != null) {
-            userLable.setText(username);
+    public void setUserProfile(User user) {
+        this.loggedInUser = user;
+        if (user != null) {
+            if (userLable != null) {
+                userLable.setText(user.getUsername());
+            }
+            if (roleLabel != null) {
+                roleLabel.setText(user.getRole());
+            }
+            initMenu(user.getRole());
         }
-        if (roleLabel != null) {
-            roleLabel.setText(role);
-        }
+    }
+
+    public User getLoggedInUser() {
+        return loggedInUser;
     }
 
     @SuppressWarnings("unchecked")
@@ -74,7 +104,7 @@ public class Menu extends javax.swing.JPanel {
             panelMovingLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelMovingLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelMovingLayout.setVerticalGroup(
@@ -119,8 +149,8 @@ public class Menu extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelMoving, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(listMenu1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
