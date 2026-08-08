@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.Appointment;
 
 /**
  *
@@ -225,5 +226,73 @@ public class AppointmentDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<Appointment> getMedicalHistoryByPatientId(int patientUserId) {
+        List<Appointment> list = new ArrayList<>();
+        String query = "SELECT a.appointment_id, a.patient_id, a.dentist_id, "
+                + "u_pat.username AS patient_name, u_pat.address, u_pat.contact_no, u_pat.whatsapp_no, "
+                + "u_doc.username AS dentist_name, a.treatment_type, a.appointment_date, a.appointment_time "
+                + "FROM appointments a "
+                + "JOIN users u_pat ON a.patient_id = u_pat.user_id "
+                + "JOIN users u_doc ON a.dentist_id = u_doc.user_id "
+                + "WHERE a.patient_id = ? "
+                + "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+
+            pst.setInt(1, patientUserId);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Appointment app = new Appointment(
+                            rs.getInt("appointment_id"),
+                            rs.getInt("patient_id"),
+                            rs.getInt("dentist_id"),
+                            rs.getString("patient_name"),
+                            rs.getString("address"),
+                            rs.getString("contact_no"),
+                            rs.getString("whatsapp_no"),
+                            rs.getString("dentist_name"),
+                            rs.getString("treatment_type"),
+                            rs.getDate("appointment_date"),
+                            rs.getString("appointment_time")
+                    );
+                    list.add(app);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Object[]> getScheduledAppointmentsByDentist(int dentistUserId) {
+        List<Object[]> list = new ArrayList<>();
+    String query = "SELECT a.appointment_id, a.patient_id, u_pat.username AS patient_name, "
+            + "a.treatment_type, a.appointment_date, a.appointment_time "
+            + "FROM appointments a "
+            + "JOIN users u_pat ON a.patient_id = u_pat.user_id "
+            + "WHERE a.dentist_id = ? AND a.status = 'SCHEDULED' "
+            + "ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+
+            pst.setInt(1, dentistUserId);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        rs.getInt("appointment_id"),
+                        rs.getInt("patient_id"),
+                        rs.getString("patient_name"),
+                        rs.getString("treatment_type"),
+                        rs.getDate("appointment_date"),
+                        rs.getString("appointment_time")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

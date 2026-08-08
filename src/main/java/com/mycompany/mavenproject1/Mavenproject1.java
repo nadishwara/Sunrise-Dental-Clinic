@@ -4,6 +4,7 @@
 
 package com.mycompany.mavenproject1;
 
+import javax.swing.UIManager;
 import view.loginF;
 
 /**
@@ -17,7 +18,7 @@ public class Mavenproject1 {
             @Override
             public void run() {
                 try {
-                    for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    for (UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                         if ("Nimbus".equals(info.getName())) {
                             javax.swing.UIManager.setLookAndFeel(info.getClassName());
                             break;
@@ -27,7 +28,6 @@ public class Mavenproject1 {
                     java.util.logging.Logger.getLogger(loginF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
 
-                // Login Frame එක සාදා Screen එක මත Display කිරීම
                 loginF loginWindow = new loginF();
                 loginWindow.setVisible(true);
             }

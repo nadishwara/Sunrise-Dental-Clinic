@@ -6,6 +6,7 @@ package DAO;
 
 import config.DBConnection;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -88,5 +89,25 @@ public class AppointmentRequestDAO {
             e.printStackTrace();
         }
         return list;
+    }
+    
+    public boolean createRequest(int patientUserId, String patientCustomId, Date preferredDate, String preferredTimeSlot, String notes, String status) {
+        String sql = "INSERT INTO appointment_requests (patient_user_id, patient_custom_id, preferred_date, preferred_time_slot, notes, status) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, patientUserId);
+            stmt.setString(2, patientCustomId);
+            stmt.setDate(3, preferredDate);
+            stmt.setString(4, preferredTimeSlot);
+            stmt.setString(5, notes);
+            stmt.setString(6, status);
+            
+            return stmt.executeUpdate()>0;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

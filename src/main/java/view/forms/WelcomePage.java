@@ -7,6 +7,7 @@ package view.forms;
 import java.awt.Color;
 import javax.swing.ImageIcon;
 import java.awt.Image;
+import model.User;
 
 /**
  *
@@ -14,39 +15,36 @@ import java.awt.Image;
  */
 public class WelcomePage extends javax.swing.JPanel {
 
-    /**
-     * Creates new form WelcomePage
-     */
+    private String userRole;
+    private User loggedInUser;
+    
     public WelcomePage() {
         initComponents();
-        java.net.URL imgURL = getClass().getResource("/images/hero-clinic.jpg");
+    }
+    
+    public WelcomePage(User loggedInUser) {
+        initComponents();
+        this.loggedInUser = loggedInUser;
+        if (loggedInUser != null) {
+            this.userRole = loggedInUser.getRole();
+        }
+        setupButtonByRole();
+    }
 
-//        if (imgURL != null) {
-//            ImageIcon originalIcon = new ImageIcon(imgURL);
-//
-////            int targetWidth = 200;
-////            int targetHeight = 150;
-//
-//            // 1. Image එක Scale කරන්න
-////            Image image = originalIcon.getImage();
-////            Image scaledImage = image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-//
-//            // 2. Scaled Icon එක Label එකට Set කරන්න
-////            jLabel1.setIcon(new ImageIcon(scaledImage));
-////
-////            // 3. Label එකේ Size එකත් Image එකේ Size එකටම Fit වන සේ වෙනස් කරන්න
-////            java.awt.Dimension newSize = new java.awt.Dimension(targetWidth, targetHeight);
-////            jLabel1.setPreferredSize(newSize);
-////            jLabel1.setMinimumSize(newSize);
-////            jLabel1.setMaximumSize(newSize);
-////            jLabel1.setSize(newSize);
-//
-//            // 4. Panel එක Layout එක Re-calculate කිරීමට Refresh කරන්න
-//            revalidate();
-//            repaint();
-//        } else {
-//            System.err.println("Could not find image file at /images/hero-clinic.jpg");
-//        }
+    public WelcomePage(String userRole, User loggedInUser) {
+        initComponents();
+        this.userRole = userRole;
+        this.loggedInUser = loggedInUser;
+        setupButtonByRole();
+    }
+    public void setupButtonByRole() {
+        if (userRole == null) return;
+        
+        if ("PATIENT".equalsIgnoreCase(userRole)) {
+            jButton1.setText("Request Appointment");
+        } else if ("RECEPTIONIST".equalsIgnoreCase(userRole) || "ADMIN".equalsIgnoreCase(userRole)) {
+            jButton1.setText("Manage Patient");
+        }
     }
 
     /**
@@ -242,6 +240,15 @@ public class WelcomePage extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        if (userRole == null) return;
+        if (userRole.equalsIgnoreCase("PATIENT")) {
+            System.out.println("Opening Req Appointment form..");
+            AppointmentReqF reqFrame = new AppointmentReqF(loggedInUser);
+            reqFrame.setLocationRelativeTo(null);
+            reqFrame.setVisible(true);
+        } else if (userRole.equalsIgnoreCase("RECEPTIONIST") || userRole.equalsIgnoreCase("ADMIN")){
+            System.out.println("Opening manage patient form...");
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

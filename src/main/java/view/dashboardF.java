@@ -11,7 +11,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import model.User;
+import view.dentistViews.ManagePatients;
+import view.forms.MedicalHistory;
 import view.forms.PatientRequestForm;
+import view.forms.WelcomePage;
 
 /**
  *
@@ -29,6 +32,9 @@ public class dashboardF extends javax.swing.JFrame {
     private view.forms.UserProfile userProfileView;
     private view.forms.NewBookings newBookingsView;
     private view.forms.WelcomePage newWelcomePage;
+    private view.forms.MedicalHistory MedicalHistory;
+    
+    private view.dentistViews.ManagePatients managePatientView;
 
     public dashboardF() {
         initComponents();
@@ -78,8 +84,10 @@ public class dashboardF extends javax.swing.JFrame {
                 String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
 
                 boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
+                boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
+                boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
 
-                int logoutIndex = isReceptionist ? 5 : 4;
+                int logoutIndex = isReceptionist ? 5 : (isPatient ? 4 : 4);
                 int dateTableIndex = isReceptionist ? 4 : 3;
 
                 if (index == 0) {
@@ -89,14 +97,19 @@ public class dashboardF extends javax.swing.JFrame {
                 } else if (index == 2) {
                     if (isReceptionist) {
                         cardLayout.show(mainPanel, "NEW_BOOKING");
-                    } else if ("DOCTOR".equalsIgnoreCase(role)) {
-                        cardLayout.show(mainPanel, "PATIENTS_DOCTOR");
+                    } else if (isPatient) {
+                        cardLayout.show(mainPanel, "MEDICAL_HISTORY");
+                    } else if (isDentist) {
+                        // Switch to ManagePatients panel
+                        cardLayout.show(mainPanel, "MANAGE_PATIENTS");
                     } else {
                         cardLayout.show(mainPanel, "PATIENTS_GENERAL");
                     }
                 } else if (isReceptionist && index == 3) {
                     patientRequestView.loadTableData();
                     cardLayout.show(mainPanel, "PATIENT_REQUEST");
+                } else if (isPatient && index == 3) {
+                    cardLayout.show(mainPanel, "BILLING_PAYMENTS");
                 } else if (index == dateTableIndex) {
                     cardLayout.show(mainPanel, "DATE_TABLE");
                 } else if (index == logoutIndex) {
@@ -137,6 +150,14 @@ public class dashboardF extends javax.swing.JFrame {
         if (loggedInUser != null) {
             userProfileView.setUserData(loggedInUser);
         }
+        
+        int dentistId = (loggedInUser != null) ? loggedInUser.getUserId() : 0;
+        
+        try {
+            managePatientView = new ManagePatients(dentistId);
+        } catch (Exception e) {
+            managePatientView = new ManagePatients();
+        }
 
         JPanel doctorPatientView = new JPanel();
         doctorPatientView.setOpaque(false);
@@ -153,7 +174,9 @@ public class dashboardF extends javax.swing.JFrame {
         patientRequestView = new view.forms.PatientRequestForm();
 
         newBookingsView = new view.forms.NewBookings();
-        newWelcomePage = new view.forms.WelcomePage();
+        String currentRole = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
+        newWelcomePage = new WelcomePage(loggedInUser);
+        MedicalHistory = new MedicalHistory(loggedInUser);
 
         javax.swing.JScrollPane newBookingsScrollPane = new javax.swing.JScrollPane(newBookingsView);
         newBookingsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -163,10 +186,12 @@ public class dashboardF extends javax.swing.JFrame {
 
         mainPanel.add(newWelcomePage, "HOME");
         mainPanel.add(userProfileView, "PROFILE");
+        mainPanel.add(managePatientView, "MANAGE_PATIENTS");
         mainPanel.add(doctorPatientView, "PATIENTS_DOCTOR");
         mainPanel.add(generalPatientView, "PATIENTS_GENERAL");
         mainPanel.add(newBookingsScrollPane, "NEW_BOOKING");
         mainPanel.add(patientRequestView, "PATIENT_REQUEST");
+        mainPanel.add(MedicalHistory, "MEDICAL_HISTORY");
     }
 
     /**

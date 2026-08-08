@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import model.Model_Menu;
 import model.User;
+import swing.EventMenuSelected;
 
 public class Menu extends javax.swing.JPanel {
 
@@ -34,13 +35,19 @@ public class Menu extends javax.swing.JPanel {
 
         listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("2", "User Profile", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
 
         if ("RECEPTIONIST".equalsIgnoreCase(userRole)) {
+            listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
             listMenu1.addItem(new Model_Menu("4", "Patient Request", Model_Menu.MenuType.MENU));
+            listMenu1.addItem(new Model_Menu("5", "Date Table", Model_Menu.MenuType.MENU));
+        } else if ("PATIENT".equalsIgnoreCase(userRole)) {
+            listMenu1.addItem(new Model_Menu("3", "Medical History", Model_Menu.MenuType.MENU));
+            listMenu1.addItem(new Model_Menu("4", "Billing & Payments", Model_Menu.MenuType.MENU));
+        } else {
+            listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
+            listMenu1.addItem(new Model_Menu("4", "Date Table", Model_Menu.MenuType.MENU));
         }
 
-        listMenu1.addItem(new Model_Menu("5", "Date Table", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("10", "Logout", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("", "", Model_Menu.MenuType.EMPTY));
     }
@@ -55,7 +62,7 @@ public class Menu extends javax.swing.JPanel {
 
         initMenu(role);
     }
-
+    
     public void addEventMenuSelected(swing.EventMenuSelected event) {
         listMenu1.addEventMenuSelected(event);
     }
