@@ -13,6 +13,7 @@ import java.sql.Date;
 public class Model_AppointmentRequest {
     private int requestId;
     private String patientCustomId;
+    private int patientUserId;
     private String patientName;
     private String patientEmail;
     private Date preferredDate;
@@ -24,6 +25,7 @@ public class Model_AppointmentRequest {
     public Model_AppointmentRequest(int requestId, String patientCustomId, String patientName, String patientEmail, Date preferredDate, String preferredTimeSlot, String dentistName, String notes, String status) {
         this.requestId = requestId;
         this.patientCustomId = patientCustomId;
+        this.patientUserId = patientUserId;
         this.patientName = patientName;
         this.patientEmail = patientEmail;
         this.preferredDate = preferredDate;
@@ -37,6 +39,9 @@ public class Model_AppointmentRequest {
 
     public int getRequestId() { return requestId; }
     public void setRequestId(int requestId) { this.requestId = requestId; }
+    
+    public int getPatientUserId() {return patientUserId;}
+    public void setPatientUserId(int patientUserId) {this.patientUserId = patientUserId;}
     
     public String getPatientCustomId() { return patientCustomId; }
     public void setPatientCustomId(String patientCustomId) { this.patientCustomId = patientCustomId; }

@@ -45,7 +45,7 @@ public class Menu extends javax.swing.JPanel {
             listMenu1.addItem(new Model_Menu("4", "Billing & Payments", Model_Menu.MenuType.MENU));
         } else {
             listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
-            listMenu1.addItem(new Model_Menu("4", "Date Table", Model_Menu.MenuType.MENU));
+            listMenu1.addItem(new Model_Menu("4", "Daily Appointments", Model_Menu.MenuType.MENU));
         }
 
         listMenu1.addItem(new Model_Menu("10", "Logout", Model_Menu.MenuType.MENU));
@@ -157,7 +157,10 @@ public class Menu extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelMoving, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import model.User;
 import view.dentistViews.ManagePatients;
+import view.forms.AnalyticsForm;
 import view.forms.MedicalHistory;
 import view.forms.PatientRequestForm;
 import view.forms.WelcomePage;
@@ -33,7 +34,9 @@ public class dashboardF extends javax.swing.JFrame {
     private view.forms.NewBookings newBookingsView;
     private view.forms.WelcomePage newWelcomePage;
     private view.forms.MedicalHistory MedicalHistory;
-    
+    private view.forms.AnalyticsForm analyticsFormView;
+    private view.dentistViews.DailyAppointment dailyAppointmentView;
+
     private view.dentistViews.ManagePatients managePatientView;
 
     public dashboardF() {
@@ -87,11 +90,29 @@ public class dashboardF extends javax.swing.JFrame {
                 boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
                 boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
 
-                int logoutIndex = isReceptionist ? 5 : (isPatient ? 4 : 4);
-                int dateTableIndex = isReceptionist ? 4 : 3;
+//                int logoutIndex = isReceptionist ? 5 : (isPatient ? 4 : 4);
+                int logoutIndex = isReceptionist ? 5 : 4;
+
+                if (index == logoutIndex) {
+                    int opt = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to Logout?",
+                            "Logout Confirmation",
+                            JOptionPane.YES_NO_OPTION
+                    );
+                    if (opt == JOptionPane.YES_OPTION) {
+                        new loginF().setVisible(true);
+                        dispose();
+                    }
+                    return; 
+                }
 
                 if (index == 0) {
-                    cardLayout.show(mainPanel, "HOME");
+                    if (isReceptionist || isDentist) {
+                        cardLayout.show(mainPanel, "ANALYTICS_HOME");
+                    } else {
+                        cardLayout.show(mainPanel, "HOME");
+                    }
                 } else if (index == 1) {
                     cardLayout.show(mainPanel, "PROFILE");
                 } else if (index == 2) {
@@ -110,8 +131,11 @@ public class dashboardF extends javax.swing.JFrame {
                     cardLayout.show(mainPanel, "PATIENT_REQUEST");
                 } else if (isPatient && index == 3) {
                     cardLayout.show(mainPanel, "BILLING_PAYMENTS");
-                } else if (index == dateTableIndex) {
-                    cardLayout.show(mainPanel, "DATE_TABLE");
+                } else if (isDentist) {
+                    if (dailyAppointmentView != null) {
+                        dailyAppointmentView.loadDailySchedule();
+                    }
+                    cardLayout.show(mainPanel, "DAILY_SCHEDULE");
                 } else if (index == logoutIndex) {
                     int opt = JOptionPane.showConfirmDialog(
                             null,
@@ -127,13 +151,17 @@ public class dashboardF extends javax.swing.JFrame {
             }
         });
 
-        cardLayout.show(mainPanel, "HOME");
+        String role = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
+        if ("RECEPTIONIST".equalsIgnoreCase(role.trim()) || "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim())) {
+            cardLayout.show(mainPanel, "ANALYTICS_HOME");
+        } else {
+            cardLayout.show(mainPanel, "HOME");
+        }
 
         if (loggedInUser != null) {
             String username = loggedInUser.getUsername();
-            String role = loggedInUser.getRole();
-
-            menu1.setUserProfile(username, role);
+            String userRole = loggedInUser.getRole();
+            menu1.setUserProfile(username, userRole);
         } else {
             menu1.setUserProfile("Guest User", "N/A");
         }
@@ -150,9 +178,9 @@ public class dashboardF extends javax.swing.JFrame {
         if (loggedInUser != null) {
             userProfileView.setUserData(loggedInUser);
         }
-        
+
         int dentistId = (loggedInUser != null) ? loggedInUser.getUserId() : 0;
-        
+
         try {
             managePatientView = new ManagePatients(dentistId);
         } catch (Exception e) {
@@ -177,6 +205,10 @@ public class dashboardF extends javax.swing.JFrame {
         String currentRole = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
         newWelcomePage = new WelcomePage(loggedInUser);
         MedicalHistory = new MedicalHistory(loggedInUser);
+        analyticsFormView = new AnalyticsForm();
+
+        managePatientView = new ManagePatients(dentistId);
+        dailyAppointmentView = new view.dentistViews.DailyAppointment(dentistId);
 
         javax.swing.JScrollPane newBookingsScrollPane = new javax.swing.JScrollPane(newBookingsView);
         newBookingsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -185,8 +217,10 @@ public class dashboardF extends javax.swing.JFrame {
         newBookingsScrollPane.setBorder(null);
 
         mainPanel.add(newWelcomePage, "HOME");
+        mainPanel.add(analyticsFormView, "ANALYTICS_HOME");
         mainPanel.add(userProfileView, "PROFILE");
         mainPanel.add(managePatientView, "MANAGE_PATIENTS");
+        mainPanel.add(dailyAppointmentView, "DAILY_SCHEDULE");
         mainPanel.add(doctorPatientView, "PATIENTS_DOCTOR");
         mainPanel.add(generalPatientView, "PATIENTS_GENERAL");
         mainPanel.add(newBookingsScrollPane, "NEW_BOOKING");
@@ -214,8 +248,8 @@ public class dashboardF extends javax.swing.JFrame {
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addComponent(menu1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 863, Short.MAX_VALUE))
+                .addComponent(menu1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 871, Short.MAX_VALUE))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

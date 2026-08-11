@@ -1,4 +1,3 @@
-
 package view.forms;
 
 import DAO.AppointmentDAO;
@@ -10,8 +9,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-
 public class NewBookings extends javax.swing.JPanel {
+
     private final AppointmentDAO appointmentDAO = new AppointmentDAO();
     private final Map<String, Integer> dentistMap = new HashMap<>();
 
@@ -21,7 +20,7 @@ public class NewBookings extends javax.swing.JPanel {
         loadDentists();
         loadAppointmentsTable();
     }
-    
+
     private void loadDentists() {
         dentistComboBox1.removeAllItems();
         dentistMap.clear();
@@ -35,16 +34,30 @@ public class NewBookings extends javax.swing.JPanel {
             dentistMap.put(name, id);
         }
     }
+
     private void loadAppointmentsTable() {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);
+        DefaultTableModel model = new DefaultTableModel(
+                new String[]{"Appointment ID", "Patient Name", "Address", "Contact No",
+                    "Whatsapp No", "Assign Dentist", "Treatment Type", "Date", "Time"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTable1.setModel(model);
 
         List<Object[]> list = appointmentDAO.getAllAppointmentsForTable();
         for (Object[] row : list) {
             model.addRow(row);
         }
+
+        // Appointment ID column එක (index 0) hide කරන්න
+        jTable1.getColumnModel().getColumn(0).setMinWidth(0);
+        jTable1.getColumnModel().getColumn(0).setMaxWidth(0);
+        jTable1.getColumnModel().getColumn(0).setWidth(0);
     }
-    
+
     private void clearFields() {
         nameField1.setText("");
         addressField2.setText("");
@@ -56,7 +69,6 @@ public class NewBookings extends javax.swing.JPanel {
         jDateChooser1.setDate(new Date());
     }
 
-    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -286,7 +298,6 @@ public class NewBookings extends javax.swing.JPanel {
                             .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(3, 3, 3)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1)
                 .addGap(16, 16, 16))
         );
@@ -330,27 +341,28 @@ public class NewBookings extends javax.swing.JPanel {
         if (selectedRow != -1) {
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
-            nameField1.setText(model.getValueAt(selectedRow, 0) != null ? model.getValueAt(selectedRow, 0).toString() : "");
-            addressField2.setText(model.getValueAt(selectedRow, 1) != null ? model.getValueAt(selectedRow, 1).toString() : "");
-            contactField.setText(model.getValueAt(selectedRow, 2) != null ? model.getValueAt(selectedRow, 2).toString() : "");
-            whatsappField.setText(model.getValueAt(selectedRow, 3) != null ? model.getValueAt(selectedRow, 3).toString() : "");
-
-            if (model.getValueAt(selectedRow, 4) != null) {
-                dentistComboBox1.setSelectedItem(model.getValueAt(selectedRow, 4).toString());
-            }
+            nameField1.setText(model.getValueAt(selectedRow, 1) != null ? model.getValueAt(selectedRow, 1).toString() : "");
+            addressField2.setText(model.getValueAt(selectedRow, 2) != null ? model.getValueAt(selectedRow, 2).toString() : "");
+            contactField.setText(model.getValueAt(selectedRow, 3) != null ? model.getValueAt(selectedRow, 3).toString() : "");
+            whatsappField.setText(model.getValueAt(selectedRow, 4) != null ? model.getValueAt(selectedRow, 4).toString() : "");
 
             if (model.getValueAt(selectedRow, 5) != null) {
-                treatmentComboBox2.setSelectedItem(model.getValueAt(selectedRow, 5).toString());
+                dentistComboBox1.setSelectedItem(model.getValueAt(selectedRow, 5).toString());
             }
 
             if (model.getValueAt(selectedRow, 6) != null) {
-                jDateChooser1.setDate((Date) model.getValueAt(selectedRow, 6));
+                treatmentComboBox2.setSelectedItem(model.getValueAt(selectedRow, 6).toString());
             }
 
             if (model.getValueAt(selectedRow, 7) != null) {
-                timeComboBox3.setSelectedItem(model.getValueAt(selectedRow, 7).toString());
+                jDateChooser1.setDate((Date) model.getValueAt(selectedRow, 7));
+            }
+
+            if (model.getValueAt(selectedRow, 8) != null) {
+                timeComboBox3.setSelectedItem(model.getValueAt(selectedRow, 8).toString());
             }
         }
+
     }//GEN-LAST:event_jTable1MouseClicked
 
     private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
@@ -363,7 +375,7 @@ public class NewBookings extends javax.swing.JPanel {
         String treatment = (String) treatmentComboBox2.getSelectedItem();
         Date selectedDate = jDateChooser1.getDate();
         String timeSlot = (String) timeComboBox3.getSelectedItem();
-        
+
         if (name.isEmpty() || contact.isEmpty() || selectedDate == null) {
             JOptionPane.showMessageDialog(this, "Please fill in all required fields (Name, Contact, Date).", "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
@@ -373,7 +385,7 @@ public class NewBookings extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Please select a valid Dentist.", "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         int dentistId = dentistMap.get(selectedDentist);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = sdf.format(selectedDate);
@@ -391,49 +403,49 @@ public class NewBookings extends javax.swing.JPanel {
     private void button2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button2ActionPerformed
         // TODO add your handling code here:
         int selectedRow = jTable1.getSelectedRow();
-    
-    if (selectedRow == -1) {
-        JOptionPane.showMessageDialog(this, 
-            "Please select an appointment from the table to delete.", 
-            "No Selection", 
-            JOptionPane.WARNING_MESSAGE);
-        return;
-    }
 
-    int confirm = JOptionPane.showConfirmDialog(this, 
-        "Are you sure you want to delete this appointment?", 
-        "Confirm Deletion", 
-        JOptionPane.YES_NO_OPTION, 
-        JOptionPane.QUESTION_MESSAGE);
-
-    if (confirm == JOptionPane.YES_OPTION) {
-        try {
-            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-            int appointmentId = Integer.parseInt(model.getValueAt(selectedRow, 0).toString());
-
-            boolean success = appointmentDAO.deleteAppointment(appointmentId);
-
-            if (success) {
-                JOptionPane.showMessageDialog(this, 
-                    "Appointment deleted successfully!", 
-                    "Success", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                
-                clearFields();
-                loadAppointmentsTable();
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Failed to delete appointment. Please try again.", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error processing deletion: " + e.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select an appointment from the table to delete.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
         }
-    }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this appointment?",
+                "Confirm Deletion",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+                int appointmentId = Integer.parseInt(model.getValueAt(selectedRow, 0).toString());
+
+                boolean success = appointmentDAO.deleteAppointment(appointmentId);
+
+                if (success) {
+                    JOptionPane.showMessageDialog(this,
+                            "Appointment deleted successfully!",
+                            "Success",
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                    clearFields();
+                    loadAppointmentsTable();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete appointment. Please try again.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error processing deletion: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_button2ActionPerformed
 
 

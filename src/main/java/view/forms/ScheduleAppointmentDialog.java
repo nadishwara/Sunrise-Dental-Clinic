@@ -34,11 +34,12 @@ public class ScheduleAppointmentDialog extends javax.swing.JFrame {
         applyRoundedCorners();
     }
 
-    public ScheduleAppointmentDialog(Model_AppointmentRequest request) {
+    public ScheduleAppointmentDialog(Model_AppointmentRequest request, int receptionistUserId) {
         initComponents();
         configureUI();
         loadDentists();
         populateFields(request);
+        this.receptionistUserId = receptionistUserId;
         applyRoundedCorners();
     }
 
@@ -49,7 +50,8 @@ public class ScheduleAppointmentDialog extends javax.swing.JFrame {
 
     private void populateFields(Model_AppointmentRequest request) {
         this.requestId = request.getRequestId();
-        
+        this.patientUserId = request.getPatientUserId();
+
         jTextField1.setText(request.getPatientCustomId());
         jTextField2.setText(request.getPatientName());
 
@@ -82,7 +84,7 @@ public class ScheduleAppointmentDialog extends javax.swing.JFrame {
             javax.swing.JOptionPane.showMessageDialog(this, "Error loading dentists: " + e.getMessage());
         }
     }
-    
+
     private void applyRoundedCorners() {
         setBackground(new java.awt.Color(0, 0, 0, 0));
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
@@ -292,39 +294,41 @@ public class ScheduleAppointmentDialog extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        int selectedIndex = jComboBox1.getSelectedIndex();
-        if (selectedIndex < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a dentist.", "Validation Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        try {
+            if (listDentists == null || listDentists.isEmpty() || jComboBox1.getSelectedIndex() < 0) {
+                JOptionPane.showMessageDialog(this, "Please select a valid dentist.");
+                return;
+            }
 
-        // Extract selected dentist's user_id
-        Staff selectedDentist = listDentists.get(selectedIndex);
-        int dentistUserId = selectedDentist.getUserId();
+            int dentistIndex = jComboBox1.getSelectedIndex();
+            int dentistUserId = listDentists.get(dentistIndex).getUserId();
 
-        String patientCustomId = jTextField1.getText();
+            Date selectedDate = jCalendar3.getDate();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDate = sdf.format(selectedDate);
 
-        Date selectedDate = jCalendar3.getDate();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String formattedDate = sdf.format(selectedDate);
+            String selectedTimeSlot = jComboBox2.getSelectedItem().toString();
 
-        String selectedTimeSlot = jComboBox2.getSelectedItem().toString();
-        String notes = "Scheduled via Reception Form";
+            AppointmentDAO appointmentDAO = new AppointmentDAO();
+            boolean success = appointmentDAO.scheduleAppointment(
+                    this.requestId,
+                    this.patientUserId, 
+                    dentistUserId,
+                    this.receptionistUserId,
+                    formattedDate,
+                    selectedTimeSlot
+            );
 
-       AppointmentDAO appDAO = new AppointmentDAO();
-        boolean success = appDAO.scheduleAppointment(
-            requestId, 
-            patientUserId, 
-            dentistUserId, 
-            receptionistUserId,
-            formattedDate, 
-            selectedTimeSlot
-        );
-        if (success) {
-            JOptionPane.showMessageDialog(this, "Appointment scheduled successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            this.dispose(); 
-        } else {
-            JOptionPane.showMessageDialog(this, "Failed to schedule appointment. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Appointment Scheduled Successfully!");
+                this.dispose(); 
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to schedule appointment.", "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

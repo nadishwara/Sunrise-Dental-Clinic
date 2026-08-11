@@ -6,10 +6,12 @@ package DAO;
 
 import config.DBConnection;
 import java.sql.Connection;
+import java.util.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import model.Appointment;
@@ -22,23 +24,36 @@ public class AppointmentDAO {
 
     public boolean scheduleAppointment(int requestId, int patientUserId, int dentistUserId, int receptionistUserId, String date, String timeSlot) {
 
-        String insertSql = "INSERT INTO appointments "
-                + "(custom_appointment_id, request_id, patient_id, dentist_id, receptionist_id, appointment_date, appointment_time, status) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED')";
-
-        String updateRequestSql = "UPDATE appointment_requests SET status = 'CONFIRMED' WHERE request_id = ?";
-
         Connection conn = null;
         try {
             conn = DBConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
 
-            String customAppId = "APP-" + System.currentTimeMillis() % 100000;
+            int validPatientId = patientUserId;
+            if (validPatientId <= 0) {
+                String fetchPatientSql = "SELECT patient_user_id FROM appointment_requests WHERE request_id = ?";
+                try (PreparedStatement psFetch = conn.prepareStatement(fetchPatientSql)) {
+                    psFetch.setInt(1, requestId);
+                    try (ResultSet rs = psFetch.executeQuery()) {
+                        if (rs.next()) {
+                            validPatientId = rs.getInt("patient_user_id");
+                        }
+                    }
+                }
+            }
+
+            String insertSql = "INSERT INTO appointments "
+                    + "(custom_appointment_id, request_id, patient_id, dentist_id, receptionist_id, appointment_date, appointment_time, status) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED')";
+
+            String updateRequestSql = "UPDATE appointment_requests SET status = 'CONFIRMED' WHERE request_id = ?";
+
+            String customAppId = "APP-" + (System.currentTimeMillis() % 100000);
 
             try (PreparedStatement ps1 = conn.prepareStatement(insertSql)) {
                 ps1.setString(1, customAppId);
                 ps1.setInt(2, requestId);
-                ps1.setInt(3, patientUserId);
+                ps1.setInt(3, validPatientId);
                 ps1.setInt(4, dentistUserId);
                 ps1.setInt(5, receptionistUserId);
                 ps1.setString(6, date);
@@ -177,6 +192,11 @@ public class AppointmentDAO {
                 }
             }
 
+            // Fallback validation: ensure patientUserId is valid before creating the appointment
+            if (patientUserId <= 0) {
+                throw new SQLException("Failed to resolve or create a valid patient user_id.");
+            }
+
             String customAppId = "APT" + (System.currentTimeMillis() % 100000);
             String appQuery = "INSERT INTO appointments (custom_appointment_id, patient_id, dentist_id, receptionist_id, appointment_date, appointment_time, treatment_type, status) "
                     + "VALUES (?, ?, ?, 10, ?, ?, ?, 'SCHEDULED')";
@@ -268,25 +288,95 @@ public class AppointmentDAO {
 
     public List<Object[]> getScheduledAppointmentsByDentist(int dentistUserId) {
         List<Object[]> list = new ArrayList<>();
-    String query = "SELECT a.appointment_id, a.patient_id, u_pat.username AS patient_name, "
-            + "a.treatment_type, a.appointment_date, a.appointment_time "
-            + "FROM appointments a "
-            + "JOIN users u_pat ON a.patient_id = u_pat.user_id "
-            + "WHERE a.dentist_id = ? AND a.status = 'SCHEDULED' "
-            + "ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+        String sql = "SELECT a.appointment_id, a.patient_id, "
+                + "COALESCE(u.username, CONCAT('Unknown (ID:', a.patient_id, ')')) AS patient_name, "
+                + "COALESCE(a.treatment_type, 'General Examination') AS treatment_type, "
+                + "a.appointment_date, a.appointment_time "
+                + "FROM appointments a "
+                + "LEFT JOIN users u ON a.patient_id = u.user_id "
+                + "WHERE a.dentist_id = ? AND a.status IN ('SCHEDULED', 'COMPLETED', 'ACCEPTED') "
+                + "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            pst.setInt(1, dentistUserId);
-            try (ResultSet rs = pst.executeQuery()) {
+            ps.setInt(1, dentistUserId);
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(new Object[]{
                         rs.getInt("appointment_id"),
                         rs.getInt("patient_id"),
                         rs.getString("patient_name"),
                         rs.getString("treatment_type"),
-                        rs.getDate("appointment_date"),
+                        rs.getDate("appointment_date") != null ? rs.getDate("appointment_date").toString() : "",
                         rs.getString("appointment_time")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private String formatTimeSlot(String rawTime) {
+        if (rawTime == null || rawTime.trim().isEmpty()) {
+            return "N/A";
+        }
+
+        String timeToParse = rawTime.contains("-") ? rawTime.split("-")[0].trim() : rawTime.trim();
+
+        try {
+            SimpleDateFormat sdf24Sec = new SimpleDateFormat("HH:mm:ss");
+            SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a");
+            Date date = sdf24Sec.parse(timeToParse);
+            return sdf12.format(date);
+        } catch (Exception ignored) {}
+
+        try {
+            SimpleDateFormat sdf24 = new SimpleDateFormat("HH:mm");
+            SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a");
+            Date date = sdf24.parse(timeToParse);
+            return sdf12.format(date);
+        } catch (Exception ignored) {}
+
+        try {
+            SimpleDateFormat sdf12Input = new SimpleDateFormat("hh:mm a");
+            Date date = sdf12Input.parse(timeToParse);
+            return sdf12Input.format(date);
+        } catch (Exception ignored) {}
+
+        return timeToParse;
+    }
+
+    public List<Object[]> getDailyAppointmentsByDentistAndDate(int dentistUserId, String selectedDate) {
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT a.appointment_time, "
+                + "COALESCE(u.username, CONCAT('Unknown (ID:', a.patient_id, ')')) AS patient_name, "
+                + "COALESCE(a.treatment_type, 'General Examination') AS treatment_type, "
+                + "COALESCE(u.contact_no, 'N/A') AS phone, "
+                + "a.status "
+                + "FROM appointments a "
+                + "LEFT JOIN users u ON a.patient_id = u.user_id "
+                + "WHERE a.dentist_id = ? AND a.appointment_date = ? "
+                + "ORDER BY a.appointment_time ASC";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, dentistUserId);
+            ps.setString(2, selectedDate);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String formattedTime = formatTimeSlot(rs.getString("appointment_time"));
+                    
+                    list.add(new Object[]{
+                        formattedTime,
+                        rs.getString("patient_name"),
+                        rs.getString("treatment_type"),
+                        rs.getString("phone"),
+                        rs.getString("status")
                     });
                 }
             }

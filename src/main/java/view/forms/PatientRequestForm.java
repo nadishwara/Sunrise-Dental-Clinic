@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package view.forms;
 
 import DAO.AppointmentRequestDAO;
@@ -16,35 +13,51 @@ import java.util.List;
  */
 public class PatientRequestForm extends javax.swing.JPanel {
 
-    /**
-     * Creates new form PatientRequestForm
-     */
+    
     private AppointmentRequestDAO dao;
     private List<Model_AppointmentRequest> listRequests;
+    private int loggedInReceptionistId;
 
     public PatientRequestForm() {
         initComponents();
-        dao = new AppointmentRequestDAO();
+        this.loggedInReceptionistId = 10;
+        this.dao = new AppointmentRequestDAO();
+        loadTableData();
+    }
+
+    public PatientRequestForm(int receptionistUserId) {
+        initComponents();
+        this.loggedInReceptionistId = receptionistUserId;
+        this.dao = new AppointmentRequestDAO();
         loadTableData();
     }
 
     public void loadTableData() {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);
+        DefaultTableModel model = new DefaultTableModel(
+                new String[]{"Req ID", "Patient ID", "Name", "Email", "Date", "Slot", "Notes", "Status"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTable1.setModel(model);
 
-        List<Model_AppointmentRequest> requests = dao.getAllRequests();
+        listRequests = dao.getAllRequests();
 
-        for (Model_AppointmentRequest req : requests) {
-            model.addRow(new Object[]{
-                req.getRequestId(),
-                req.getPatientCustomId(),
-                req.getPatientName(),
-                req.getPatientEmail(),
-                req.getPreferredDate(),
-                req.getPreferredTimeSlot(),
-                req.getNotes(),
-                req.getStatus()
-            });
+        if (listRequests != null) {
+            for (Model_AppointmentRequest req : listRequests) {
+                model.addRow(new Object[]{
+                    req.getRequestId(),
+                    req.getPatientCustomId(),
+                    req.getPatientName(),
+                    req.getPatientEmail(),
+                    req.getPreferredDate(),
+                    req.getPreferredTimeSlot(),
+                    req.getNotes(),
+                    req.getStatus()
+                });
+            }
         }
     }
 
@@ -173,46 +186,46 @@ public class PatientRequestForm extends javax.swing.JPanel {
     private void ScheduleAbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ScheduleAbtnActionPerformed
         // TODO add your handling code here:
         try {
-        int selectedRow = jTable1.getSelectedRow();
-        
-        if (selectedRow != -1) {
-            Object idObj = jTable1.getValueAt(selectedRow, 0);
-            if (idObj == null) {
-                javax.swing.JOptionPane.showMessageDialog(this, "Selected row has invalid ID!");
-                return;
-            }
-            int requestId = Integer.parseInt(idObj.toString());
+            int selectedRow = jTable1.getSelectedRow();
 
-            String patientCustomId = jTable1.getValueAt(selectedRow, 1) != null ? jTable1.getValueAt(selectedRow, 1).toString() : "";
-            String patientName = jTable1.getValueAt(selectedRow, 2) != null ? jTable1.getValueAt(selectedRow, 2).toString() : "";
-            
-            java.sql.Date preferredDate = null;
-            Object dateObj = jTable1.getValueAt(selectedRow, 3);
-            if (dateObj instanceof java.sql.Date) {
-                preferredDate = (java.sql.Date) dateObj;
-            } else if (dateObj != null) {
-                try {
-                    preferredDate = java.sql.Date.valueOf(dateObj.toString());
-                } catch (Exception e) {
+            if (selectedRow != -1) {
+                Object idObj = jTable1.getValueAt(selectedRow, 0);
+                if (idObj == null) {
+                    javax.swing.JOptionPane.showMessageDialog(this, "Selected row has invalid ID!");
+                    return;
                 }
+                int requestId = Integer.parseInt(idObj.toString());
+
+                String patientCustomId = jTable1.getValueAt(selectedRow, 1) != null ? jTable1.getValueAt(selectedRow, 1).toString() : "";
+                String patientName = jTable1.getValueAt(selectedRow, 2) != null ? jTable1.getValueAt(selectedRow, 2).toString() : "";
+
+                java.sql.Date preferredDate = null;
+                Object dateObj = jTable1.getValueAt(selectedRow, 3);
+                if (dateObj instanceof java.sql.Date) {
+                    preferredDate = (java.sql.Date) dateObj;
+                } else if (dateObj != null) {
+                    try {
+                        preferredDate = java.sql.Date.valueOf(dateObj.toString());
+                    } catch (Exception e) {
+                    }
+                }
+
+                String preferredTimeSlot = jTable1.getValueAt(selectedRow, 4) != null ? jTable1.getValueAt(selectedRow, 4).toString() : "";
+
+                Model_AppointmentRequest selectedRequest = new Model_AppointmentRequest(
+                        requestId, patientCustomId, patientName, "", preferredDate, preferredTimeSlot, "", "", ""
+                );
+                ScheduleAppointmentDialog dialog = new ScheduleAppointmentDialog(selectedRequest, loggedInReceptionistId);
+                dialog.setLocationRelativeTo(this);
+                dialog.setVisible(true);
+
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Please select an appointment request from the table first.");
             }
-
-            String preferredTimeSlot = jTable1.getValueAt(selectedRow, 4) != null ? jTable1.getValueAt(selectedRow, 4).toString() : "";
-
-            Model_AppointmentRequest selectedRequest = new Model_AppointmentRequest(
-                requestId, patientCustomId, patientName, "", preferredDate, preferredTimeSlot, "", "", ""
-            );
-            ScheduleAppointmentDialog dialog = new ScheduleAppointmentDialog(selectedRequest);
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(this, "Please select an appointment request from the table first.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error opening dialog: " + e.getMessage());
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        javax.swing.JOptionPane.showMessageDialog(this, "Error opening dialog: " + e.getMessage());
-    }
     }//GEN-LAST:event_ScheduleAbtnActionPerformed
 
 
