@@ -192,7 +192,6 @@ public class AppointmentDAO {
                 }
             }
 
-            // Fallback validation: ensure patientUserId is valid before creating the appointment
             if (patientUserId <= 0) {
                 throw new SQLException("Failed to resolve or create a valid patient user_id.");
             }

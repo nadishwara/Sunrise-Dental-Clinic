@@ -101,6 +101,9 @@ public class Searchbar extends javax.swing.JPanel {
     public JTextField getSearchTextField() {
         return searchTextField;
     }
+    public String getText() {
+        return searchTextField.getText();
+    }
 
     private void setupPlaceholderLogic() {
         searchTextField.setForeground(new Color(150, 150, 150));

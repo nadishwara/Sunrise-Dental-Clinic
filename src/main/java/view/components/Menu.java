@@ -26,6 +26,14 @@ public class Menu extends javax.swing.JPanel {
         jPanel1.setOpaque(false);
         userLable.setForeground(Color.WHITE);
         roleLabel.setForeground(new Color(220, 220, 220));
+
+        listMenu1.setPreferredSize(null);
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(225, 60));
+        jPanel1.setMaximumSize(new java.awt.Dimension(32767, 60));
+
+        revalidate();
+        repaint();
     }
 
     public void initMenu(String role) {
@@ -39,7 +47,7 @@ public class Menu extends javax.swing.JPanel {
         if ("RECEPTIONIST".equalsIgnoreCase(userRole)) {
             listMenu1.addItem(new Model_Menu("3", "Manage Patients", Model_Menu.MenuType.MENU));
             listMenu1.addItem(new Model_Menu("4", "Patient Request", Model_Menu.MenuType.MENU));
-            listMenu1.addItem(new Model_Menu("5", "Date Table", Model_Menu.MenuType.MENU));
+            listMenu1.addItem(new Model_Menu("5", "Billing", Model_Menu.MenuType.MENU));
         } else if ("PATIENT".equalsIgnoreCase(userRole)) {
             listMenu1.addItem(new Model_Menu("3", "Medical History", Model_Menu.MenuType.MENU));
             listMenu1.addItem(new Model_Menu("4", "Billing & Payments", Model_Menu.MenuType.MENU));
@@ -62,7 +70,7 @@ public class Menu extends javax.swing.JPanel {
 
         initMenu(role);
     }
-    
+
     public void addEventMenuSelected(swing.EventMenuSelected event) {
         listMenu1.addEventMenuSelected(event);
     }
@@ -70,14 +78,14 @@ public class Menu extends javax.swing.JPanel {
     public void setUserProfile(User user) {
         this.loggedInUser = user;
         if (user != null) {
-            if (userLable != null) {
-                userLable.setText(user.getUsername());
-            }
-            if (roleLabel != null) {
-                roleLabel.setText(user.getRole());
-            }
+            userLable.setText(user.getUsername() != null ? user.getUsername() : "Guest");
+            roleLabel.setText(user.getRole() != null ? user.getRole() : "User");
+
             initMenu(user.getRole());
         }
+
+        revalidate();
+        repaint();
     }
 
     public User getLoggedInUser() {
@@ -137,18 +145,20 @@ public class Menu extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(roleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(userLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(userLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(roleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(66, Short.MAX_VALUE)
-                .addComponent(userLable)
+                .addContainerGap()
+                .addComponent(userLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(roleLabel)
-                .addContainerGap())
+                .addGap(0, 0, 0))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -156,20 +166,24 @@ public class Menu extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelMoving, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(panelMoving, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(listMenu1, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 

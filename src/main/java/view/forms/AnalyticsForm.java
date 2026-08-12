@@ -30,28 +30,56 @@ public class AnalyticsForm extends javax.swing.JPanel {
      * Creates new form AnalyticsForm
      */
     private final AnalyticsDAO analyticsDAO;
+
     public AnalyticsForm() {
         initComponents();
         this.analyticsDAO = new AnalyticsDAO();
-        
+
         setLayout(new BorderLayout());
         initDashboardCharts();
     }
-    
+
     public final void initDashboardCharts() {
-        JPanel chartContainer = new JPanel(new GridLayout(2, 2, 15, 15));
-        chartContainer.setBackground(new Color(245, 245, 250));
+    JPanel chartContainer = new JPanel(new java.awt.GridLayout(0, 2, 12, 12));
+    chartContainer.setBackground(new Color(245, 245, 250));
 
-        chartContainer.add(createPatientsTodayPieChart());
-        chartContainer.add(createWeeklyPatientsBarChart());
-        chartContainer.add(createTreatmentDistributionChart());
+    ChartPanel p1 = (ChartPanel) createPatientsTodayPieChart();
+    ChartPanel p2 = (ChartPanel) createWeeklyPatientsBarChart();
+    ChartPanel p3 = (ChartPanel) createTreatmentDistributionChart();
 
-        removeAll();
-        add(chartContainer, BorderLayout.CENTER);
-        revalidate();
-        repaint();
-    }
+    p1.setMouseWheelEnabled(false);
+    p2.setMouseWheelEnabled(false);
+    p3.setMouseWheelEnabled(false);
+
+    java.awt.Dimension compactChartSize = new java.awt.Dimension(360, 320);
+    p1.setPreferredSize(compactChartSize);
+    p2.setPreferredSize(compactChartSize);
+    p3.setPreferredSize(compactChartSize);
+
+    chartContainer.add(p1);
+    chartContainer.add(p2);
+    chartContainer.add(p3);
+
+    JPanel scrollContent = new JPanel(new java.awt.BorderLayout());
+    scrollContent.setBackground(new Color(245, 245, 250));
+    scrollContent.add(chartContainer, java.awt.BorderLayout.NORTH);
+
+    javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(scrollContent);
     
+    scrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    scrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+    scrollPane.getVerticalScrollBar().setUnitIncrement(22);
+    scrollPane.setBorder(null);
+
+    removeAll();
+    setLayout(new java.awt.BorderLayout());
+    add(scrollPane, java.awt.BorderLayout.CENTER);
+
+    revalidate();
+    repaint();
+}
+
     private JPanel createPatientsTodayPieChart() {
         int todayCount = analyticsDAO.getTotalPatientsToday();
 
@@ -77,10 +105,10 @@ public class AnalyticsForm extends javax.swing.JPanel {
 
         return new ChartPanel(chart);
     }
-    
+
     private JPanel createWeeklyPatientsBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
+
         Map<String, Integer> weeklyData = analyticsDAO.getWeeklyPatientCount();
         for (Map.Entry<String, Integer> entry : weeklyData.entrySet()) {
             dataset.addValue(entry.getValue(), "Patients", entry.getKey());
@@ -99,13 +127,13 @@ public class AnalyticsForm extends javax.swing.JPanel {
 
         CategoryPlot plot = chart.getCategoryPlot();
         plot.setBackgroundPaint(Color.WHITE);
-        
+
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, new Color(46, 204, 113));
 
         return new ChartPanel(chart);
     }
-    
+
     private JPanel createTreatmentDistributionChart() {
         DefaultPieDataset dataset = new DefaultPieDataset();
 

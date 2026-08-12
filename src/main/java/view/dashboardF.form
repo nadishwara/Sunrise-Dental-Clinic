@@ -29,7 +29,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="panelBorder1" alignment="0" max="32767" attributes="0"/>
+          <Component id="panelBorder1" alignment="0" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -41,18 +41,27 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="menu1" min="-2" pref="231" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="871" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="796" max="-2" attributes="0"/>
+                  <Component id="controlButtons1" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="menu1" alignment="0" pref="664" max="32767" attributes="0"/>
+              <Component id="menu1" pref="664" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="controlButtons1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
         <Component class="view.components.Menu" name="menu1">
+        </Component>
+        <Component class="swing.ControlButtons" name="controlButtons1">
         </Component>
       </SubComponents>
     </Container>
