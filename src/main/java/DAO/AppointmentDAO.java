@@ -249,13 +249,13 @@ public class AppointmentDAO {
 
     public List<Appointment> getMedicalHistoryByPatientId(int patientUserId) {
         List<Appointment> list = new ArrayList<>();
-        String query = "SELECT a.appointment_id, a.patient_id, a.dentist_id, "
-                + "u_pat.username AS patient_name, u_pat.address, u_pat.contact_no, u_pat.whatsapp_no, "
-                + "u_doc.username AS dentist_name, a.treatment_type, a.appointment_date, a.appointment_time "
+        String query = "SELECT a.appointment_id, a.appointment_date, a.appointment_time, "
+                + "COALESCE(t.treatment_name, 'General Consultation') AS treatment_name, "
+                + "CONCAT('Dr. ', u.username) AS dentist_name "
                 + "FROM appointments a "
-                + "JOIN users u_pat ON a.patient_id = u_pat.user_id "
-                + "JOIN users u_doc ON a.dentist_id = u_doc.user_id "
-                + "WHERE a.patient_id = ? "
+                + "LEFT JOIN treatment_records t ON a.appointment_id = t.appointment_id "
+                + "LEFT JOIN users u ON a.dentist_id = u.user_id "
+                + "WHERE a.patient_id = ? AND a.status = 'COMPLETED' "
                 + "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
         try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
@@ -263,19 +263,13 @@ public class AppointmentDAO {
             pst.setInt(1, patientUserId);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
-                    Appointment app = new Appointment(
-                            rs.getInt("appointment_id"),
-                            rs.getInt("patient_id"),
-                            rs.getInt("dentist_id"),
-                            rs.getString("patient_name"),
-                            rs.getString("address"),
-                            rs.getString("contact_no"),
-                            rs.getString("whatsapp_no"),
-                            rs.getString("dentist_name"),
-                            rs.getString("treatment_type"),
-                            rs.getDate("appointment_date"),
-                            rs.getString("appointment_time")
-                    );
+                    Appointment app = new Appointment();
+                    app.setAppointmentId(rs.getInt("appointment_id"));
+                    app.setAppointmentDate(rs.getDate("appointment_date"));
+                    app.setAppointmentTime(rs.getString("appointment_time"));
+                    app.setTreatmentType(rs.getString("treatment_name"));
+                    app.setDentistName(rs.getString("dentist_name"));
+
                     list.add(app);
                 }
             }
@@ -284,7 +278,7 @@ public class AppointmentDAO {
         }
         return list;
     }
-
+    
     public List<Object[]> getScheduledAppointmentsByDentist(int dentistUserId) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT a.appointment_id, a.patient_id, "
@@ -329,20 +323,23 @@ public class AppointmentDAO {
             SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a");
             Date date = sdf24Sec.parse(timeToParse);
             return sdf12.format(date);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         try {
             SimpleDateFormat sdf24 = new SimpleDateFormat("HH:mm");
             SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a");
             Date date = sdf24.parse(timeToParse);
             return sdf12.format(date);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         try {
             SimpleDateFormat sdf12Input = new SimpleDateFormat("hh:mm a");
             Date date = sdf12Input.parse(timeToParse);
             return sdf12Input.format(date);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return timeToParse;
     }
@@ -360,8 +357,7 @@ public class AppointmentDAO {
                 + "WHERE a.dentist_id = ? AND a.appointment_date = ? "
                 + "ORDER BY a.appointment_time ASC";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, dentistUserId);
             ps.setString(2, selectedDate);
@@ -369,7 +365,7 @@ public class AppointmentDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String formattedTime = formatTimeSlot(rs.getString("appointment_time"));
-                    
+
                     list.add(new Object[]{
                         formattedTime,
                         rs.getString("patient_name"),
@@ -383,5 +379,28 @@ public class AppointmentDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public int getAppointmentIdByDetails(int dentistId, String dateStr, String timeStr, String patientName) {
+        int apptId = 0;
+        String sql = "SELECT a.appointment_id FROM appointments a "
+                + "JOIN users u ON a.patient_id = u.user_id "
+                + "WHERE a.dentist_id = ? AND a.appointment_date = ? AND u.username = ? LIMIT 1";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, dentistId);
+            ps.setString(2, dateStr);
+            ps.setString(3, patientName);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    apptId = rs.getInt("appointment_id");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return apptId;
     }
 }

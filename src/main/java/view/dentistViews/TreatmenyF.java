@@ -41,6 +41,8 @@ public class TreatmenyF extends javax.swing.JFrame {
         makeFrameRounded(30, 30);
         enableWindowDragging();
     }
+    
+    
 
     public TreatmenyF(int appointmentId, int patientUserId, String patientName, String treatmentType, int dentistUserId) {
         this(appointmentId, patientUserId, patientName, treatmentType, dentistUserId, null, null);
@@ -662,8 +664,21 @@ public class TreatmenyF extends javax.swing.JFrame {
     private void saveTreatmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveTreatmentButtonActionPerformed
         // TODO add your handling code here:
         try {
-            String treatmentName = treatmentComboBox.getSelectedItem().toString();
-            String selectedToothItem = toothNoComboBox.getSelectedItem().toString();
+            String treatmentName = treatmentComboBox.getSelectedItem() != null ? treatmentComboBox.getSelectedItem().toString() : "";
+            String selectedToothItem = toothNoComboBox.getSelectedItem() != null ? toothNoComboBox.getSelectedItem().toString() : "";
+
+            // Validation: Ensure a valid tooth or item header isn't just left blank/default improperly
+            if (selectedToothItem.startsWith("--") || treatmentName.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please select a valid treatment name and tooth number.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String clinicalNotes = chinicalNotesTextArea1.getText() != null ? chinicalNotesTextArea1.getText().trim() : "";
+            if (clinicalNotes.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Clinical notes cannot be empty.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                chinicalNotesTextArea1.requestFocus();
+                return;
+            }
 
             String toothNumberStr = selectedToothItem.contains(" - ") ? selectedToothItem.split(" - ")[0].trim() : selectedToothItem.trim();
             int toothNoInt = 0;
@@ -672,10 +687,9 @@ public class TreatmenyF extends javax.swing.JFrame {
             } catch (NumberFormatException ignored) {
             }
 
-            String clinicalNotes = chinicalNotesTextArea1.getText();
-            String toothStatus = statusComboBox3.getSelectedItem().toString().toUpperCase();
-            String toothNotes = toothChartNoteTextArea.getText();
-            String xrayType = xRayTypeComboBox.getSelectedItem().toString();
+            String toothStatus = statusComboBox3.getSelectedItem() != null ? statusComboBox3.getSelectedItem().toString().toUpperCase() : "";
+            String toothNotes = toothChartNoteTextArea.getText() != null ? toothChartNoteTextArea.getText().trim() : "";
+            String xrayType = xRayTypeComboBox.getSelectedItem() != null ? xRayTypeComboBox.getSelectedItem().toString() : "";
 
             DefaultTableModel model = (DefaultTableModel) medicationRecordTable.getModel();
             List<Object[]> prescriptionsList = new ArrayList<>();
