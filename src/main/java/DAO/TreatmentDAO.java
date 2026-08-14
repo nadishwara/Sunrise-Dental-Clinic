@@ -30,7 +30,6 @@ public class TreatmentDAO {
                     data.put("toothNumber", rs.getString("tooth_number"));
                     data.put("clinicalNotes", rs.getString("clinical_notes"));
                     data.put("serviceCost", rs.getDouble("service_cost"));
-                    // prescriptions කොටස ඉවත් කර හිස් List එකක් පවරයි
                     data.put("prescriptions", new ArrayList<Object[]>());
                 }
             }

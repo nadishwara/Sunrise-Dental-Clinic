@@ -2,21 +2,48 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package view.forms;
+package view.components;
+
+import java.io.File;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 
 /**
  *
  * @author nadis
  */
-public class AssignAppointment extends javax.swing.JFrame {
+public class XRayViewFrame extends javax.swing.JFrame {
 
     /**
-     * Creates new form AssignAppointment
+     * Creates new form XRayViewFrame
      */
-    
-    
-    public AssignAppointment() {
+    private String imagePath;
+    public XRayViewFrame(String imagePath) {
         initComponents();
+        loadXRayImage(imagePath);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    }
+    public XRayViewFrame() {
+        initComponents();
+    }
+    
+    private void loadXRayImage(String imagePath) {
+        if (imagePath != null && !imagePath.isEmpty()) {
+            File file = new File(imagePath);
+            
+            if (file.exists()) {
+                ImageIcon icon = new ImageIcon(imagePath);
+                
+                Image img = icon.getImage().getScaledInstance(xrayImageViewLabel.getWidth(), xrayImageViewLabel.getHeight(), Image.SCALE_SMOOTH);
+                xrayImageViewLabel.setIcon(new ImageIcon(img));
+                xrayImageViewLabel.setText("");
+            } else {
+                xrayImageViewLabel.setText("X-Ray Image file not found on path!");
+            }
+        } else {
+            xrayImageViewLabel.setText("No X-Ray record found for this appointment.");
+        }
     }
 
     /**
@@ -28,17 +55,26 @@ public class AssignAppointment extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        xrayImageViewLabel = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        xrayImageViewLabel.setText("xray Image View");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 931, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(xrayImageViewLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 648, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(xrayImageViewLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -61,24 +97,25 @@ public class AssignAppointment extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AssignAppointment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(XRayViewFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AssignAppointment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(XRayViewFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AssignAppointment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(XRayViewFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(AssignAppointment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(XRayViewFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new AssignAppointment().setVisible(true);
+                new XRayViewFrame().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel xrayImageViewLabel;
     // End of variables declaration//GEN-END:variables
 }
