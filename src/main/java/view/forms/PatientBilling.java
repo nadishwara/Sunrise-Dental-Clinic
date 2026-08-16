@@ -91,16 +91,19 @@ public class PatientBilling extends javax.swing.JPanel {
             patintNameLabel1.setText(currentBillingDetails.getPatientName());
             patintContact.setText(currentBillingDetails.getPatientPhone());
 
-            // patintAge.setText(String.valueOf(currentBillingDetails.getPatientAge())); 
             appintmentIDLable.setText(currentBillingDetails.getCustomAppointmentId());
             dateLabel.setText(currentBillingDetails.getAppointmentDate());
             doctorNameLabel.setText("Dr. " + currentBillingDetails.getDoctorName());
 
-            // clinicNoteTextArea.setText(currentBillingDetails.getClinicNotes());
             populateLists();
 
             txtTreatmentCost.setText(String.format("%.2f", currentBillingDetails.getTotalTreatmentCost()));
             txtXrayCost.setText(String.format("%.2f", currentBillingDetails.getTotalXrayCost()));
+
+            // Populate editable financial fields if a bill already exists
+            txtConsultationFee.setText(currentBillingDetails.getConsultationFee() > 0 ? String.format("%.2f", currentBillingDetails.getConsultationFee()) : "");
+            txtOtherCharges.setText(currentBillingDetails.getOtherCharges() > 0 ? String.format("%.2f", currentBillingDetails.getOtherCharges()) : "");
+            txtDiscount.setText(currentBillingDetails.getDiscount() > 0 ? String.format("%.2f", currentBillingDetails.getDiscount()) : "");
 
             calculateTotalCost();
         }
@@ -126,6 +129,11 @@ public class PatientBilling extends javax.swing.JPanel {
 
             txtTreatmentCost.setText(String.format("%.2f", currentBillingDetails.getTotalTreatmentCost()));
             txtXrayCost.setText(String.format("%.2f", currentBillingDetails.getTotalXrayCost()));
+
+            // Populate editable financial fields if a bill already exists
+            txtConsultationFee.setText(currentBillingDetails.getConsultationFee() > 0 ? String.format("%.2f", currentBillingDetails.getConsultationFee()) : "");
+            txtOtherCharges.setText(currentBillingDetails.getOtherCharges() > 0 ? String.format("%.2f", currentBillingDetails.getOtherCharges()) : "");
+            txtDiscount.setText(currentBillingDetails.getDiscount() > 0 ? String.format("%.2f", currentBillingDetails.getDiscount()) : "");
 
             calculateTotalCost();
 
@@ -992,7 +1000,36 @@ public class PatientBilling extends javax.swing.JPanel {
 
     private void saveUpdateBillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveUpdateBillButtonActionPerformed
         // TODO add your handling code here:
+        System.out.println("--- DEBUG: Update Bill Button Clicked ---");
 
+        if (currentBillingDetails == null) {
+            System.out.println("DEBUG: currentBillingDetails is NULL!");
+            JOptionPane.showMessageDialog(this, "Please select or search for an appointment first.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int appointmentId = currentBillingDetails.getAppointmentId();
+        System.out.println("DEBUG: Selected Appointment ID: " + appointmentId);
+
+        double consultationFee = parseDouble(txtConsultationFee.getText());
+        double otherCharges = parseDouble(txtOtherCharges.getText());
+        double discount = parseDouble(txtDiscount.getText());
+
+        System.out.println("DEBUG: Consultation Fee: " + consultationFee);
+        System.out.println("DEBUG: Other Charges: " + otherCharges);
+        System.out.println("DEBUG: Discount: " + discount);
+
+        boolean isSuccess = billingDAO.updateBill(appointmentId, consultationFee, otherCharges, discount);
+
+        if (isSuccess) {
+            System.out.println("DEBUG: Bill updated successfully in Database.");
+            JOptionPane.showMessageDialog(this, "Bill updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadTableData();
+            clearFields();
+        } else {
+            System.out.println("DEBUG: Failed to update bill in Database.");
+            JOptionPane.showMessageDialog(this, "Failed to update the bill. Make sure a bill exists for this appointment.", "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_saveUpdateBillButtonActionPerformed
 
     private void printBillButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printBillButton1ActionPerformed

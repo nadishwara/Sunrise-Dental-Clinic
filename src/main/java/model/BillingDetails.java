@@ -28,6 +28,12 @@ public class BillingDetails {
 
     private double totalTreatmentCost;
     private double totalXrayCost;
+    
+    private double consultationFee;
+    private double otherCharges;
+    private double discount;
+    private double netAmount;
+    private String paymentStatus;
 
     public BillingDetails() {}
 
@@ -72,4 +78,19 @@ public class BillingDetails {
 
     public double getTotalXrayCost() { return totalXrayCost; }
     public void setTotalXrayCost(double totalXrayCost) { this.totalXrayCost = totalXrayCost; }
+//    new setters getters
+    public double getConsultationFee() { return consultationFee; }
+    public void setConsultationFee(double consultationFee) { this.consultationFee = consultationFee; }
+
+    public double getOtherCharges() { return otherCharges; }
+    public void setOtherCharges(double otherCharges) { this.otherCharges = otherCharges; }
+
+    public double getDiscount() { return discount; }
+    public void setDiscount(double discount) { this.discount = discount; }
+
+    public double getNetAmount() { return netAmount; }
+    public void setNetAmount(double netAmount) { this.netAmount = netAmount; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 }

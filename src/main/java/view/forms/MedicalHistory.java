@@ -33,6 +33,7 @@ public class MedicalHistory extends javax.swing.JPanel {
     private AppointmentDAO appointmentDAO = new AppointmentDAO();
     private JPanel containerPanel;
     private JScrollPane jScrollPane1;
+    private int appointmentId;
 
     public MedicalHistory() {
         initComponents();
@@ -158,6 +159,10 @@ public class MedicalHistory extends javax.swing.JPanel {
         JButton localViewButton = new JButton("View");
         localViewButton.setBackground(new java.awt.Color(153, 255, 102));
         localViewButton.setForeground(Color.WHITE);
+        
+        JButton localBillButton = new JButton("Bill");
+        localBillButton.setBackground(new java.awt.Color(204, 0, 0));
+        localBillButton.setForeground(Color.WHITE);
 
         if (app != null) {
             localViewButton.addActionListener(e -> {
@@ -173,8 +178,16 @@ public class MedicalHistory extends javax.swing.JPanel {
                     JOptionPane.showMessageDialog(null, "No report found for this appointment!");
                 }
             });
+            
+            localBillButton.addActionListener(e -> {
+                int appointmentId = app.getAppointmentId(); 
+                
+                ViewBillFreame billFrame = new ViewBillFreame(appointmentId);
+                billFrame.setVisible(true);
+            });
         } else {
             localViewButton.setEnabled(false);
+            localBillButton.setEnabled(false);
         }
 
         panel.add(dLabel);
@@ -183,6 +196,7 @@ public class MedicalHistory extends javax.swing.JPanel {
         panel.add(pLabel);
         panel.add(docLabel);
         panel.add(localViewButton);
+        panel.add(localBillButton);
 
         return panel;
     }
@@ -211,6 +225,7 @@ public class MedicalHistory extends javax.swing.JPanel {
         typeLabel = new javax.swing.JLabel();
         patientNameLabel = new javax.swing.JLabel();
         viewButton = new javax.swing.JButton();
+        viewButton1 = new javax.swing.JButton();
 
         jPanel1.setBackground(new java.awt.Color(228, 239, 232));
 
@@ -275,7 +290,7 @@ public class MedicalHistory extends javax.swing.JPanel {
             }
         });
 
-        viewButton.setBackground(new java.awt.Color(153, 255, 102));
+        viewButton.setBackground(new java.awt.Color(0, 204, 51));
         viewButton.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
         viewButton.setForeground(new java.awt.Color(255, 255, 255));
         viewButton.setText("View");
@@ -283,6 +298,17 @@ public class MedicalHistory extends javax.swing.JPanel {
         viewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewButtonActionPerformed(evt);
+            }
+        });
+
+        viewButton1.setBackground(new java.awt.Color(204, 0, 0));
+        viewButton1.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
+        viewButton1.setForeground(new java.awt.Color(255, 255, 255));
+        viewButton1.setText("Bill");
+        viewButton1.setToolTipText("");
+        viewButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewButton1ActionPerformed(evt);
             }
         });
 
@@ -301,7 +327,9 @@ public class MedicalHistory extends javax.swing.JPanel {
                 .addComponent(patientNameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(74, 74, 74)
                 .addComponent(assigndoctorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(231, 231, 231)
+                .addGap(141, 141, 141)
+                .addComponent(viewButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(viewButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(17, 17, 17))
         );
@@ -309,14 +337,16 @@ public class MedicalHistory extends javax.swing.JPanel {
             roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(viewButton)
+                .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(dateLabel)
                         .addComponent(timeLabel)
                         .addComponent(patientNameLabel)
                         .addComponent(assigndoctorLabel)
-                        .addComponent(typeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(typeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(viewButton)
+                        .addComponent(viewButton1)))
                 .addContainerGap())
         );
 
@@ -364,7 +394,7 @@ public class MedicalHistory extends javax.swing.JPanel {
                     .addComponent(jLabel7))
                 .addGap(18, 18, 18)
                 .addComponent(roundedPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(401, Short.MAX_VALUE))
+                .addContainerGap(411, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -413,6 +443,12 @@ public class MedicalHistory extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_viewButtonActionPerformed
 
+    private void viewButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewButton1ActionPerformed
+        // TODO add your handling code here:
+        ViewBillFreame BillF = new ViewBillFreame();
+        BillF.setVisible(true);
+    }//GEN-LAST:event_viewButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel assigndoctorLabel;
@@ -430,5 +466,6 @@ public class MedicalHistory extends javax.swing.JPanel {
     private javax.swing.JLabel timeLabel;
     private javax.swing.JLabel typeLabel;
     private javax.swing.JButton viewButton;
+    private javax.swing.JButton viewButton1;
     // End of variables declaration//GEN-END:variables
 }
