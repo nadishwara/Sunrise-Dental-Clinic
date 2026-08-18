@@ -28,7 +28,6 @@ public class ReceptionHelpF extends javax.swing.JFrame {
     private JScrollPane scrollPane;
     private int mouseX, mouseY;
     
-    // Track expansion state and which section is currently active
     private int activeSection = 1;
     
     /**
@@ -39,8 +38,27 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         initExpandableFeature();
         toggleContent(1);
         makeCornersRounded();
+        initWindowDragging();
     }
     
+    private void initWindowDragging() {
+        jPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                mouseX = evt.getX();
+                mouseY = evt.getY();
+            }
+        });
+
+        jPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                int x = evt.getXOnScreen();
+                int y = evt.getXOnScreen();
+                setLocation(evt.getXOnScreen() - mouseX, evt.getYOnScreen() - mouseY);
+            }
+        });
+    }
     
     private void initExpandableFeature() {
         jLabel1.setVisible(false);
