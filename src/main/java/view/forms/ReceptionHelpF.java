@@ -26,9 +26,10 @@ public class ReceptionHelpF extends javax.swing.JFrame {
      */
     
     private JScrollPane scrollPane;
+    private int mouseX, mouseY;
     
     // Track expansion state and which section is currently active
-    private int activeSection = 0;
+    private int activeSection = 1;
     
     /**
      * Creates new form ReceptionHelpF
@@ -36,8 +37,10 @@ public class ReceptionHelpF extends javax.swing.JFrame {
     public ReceptionHelpF() {
         initComponents();
         initExpandableFeature();
+        toggleContent(1);
         makeCornersRounded();
     }
+    
     
     private void initExpandableFeature() {
         jLabel1.setVisible(false);
@@ -75,33 +78,43 @@ public class ReceptionHelpF extends javax.swing.JFrame {
                 headingLabel.setText("Schedule New Appointment.");
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/Screenshot 2026-08-18 150149.png")));
                 stepsLabel.setText("<html>" +
-                    "1. Patient Name: Enter the patient's full name into the text field.<br>" +
-                    "2. Address: Provide the residential address of the patient.<br>" +
-                    "3. Contact number: Enter the primary phone number for communication.<br>" +
-                    "4. Whatsapp number: Type the WhatsApp-enabled contact number.<br>" +
-                    "5. Assign Dentist name: Select the appropriate dentist from the dropdown menu.<br>" +
-                    "6. Treatment type: Choose the required dental treatment category.<br>" +
-                    "7. Appointment Date: Pick the preferred date using the calendar/date field.<br>" +
-                    "8. Time: Select the available time slot from the dropdown options.<br>" +
-                    "9. Save: Click the green 'Save' button to register the appointment into the system." +
+                    "step 1. Patient Name: Enter the patient's full name into the text field.<br>" +
+                    "step 2. Address: Provide the residential address of the patient.<br>" +
+                    "step 3. Contact number: Enter the primary phone number for communication.<br>" +
+                    "step 4. Whatsapp number: Type the WhatsApp-enabled contact number.<br>" +
+                    "step 5. Assign Dentist name: Select the appropriate dentist from the dropdown menu.<br>" +
+                    "step 6. Treatment type: Choose the required dental treatment category.<br>" +
+                    "step 7. Appointment Date: Pick the preferred date using the calendar/date field.<br>" +
+                    "step 8. Time: Select the available time slot from the dropdown options.<br>" +
+                    "step 9. Save: Click the green 'Save' button to register the appointment into the system." +
                     "</html>");
             } else if (sectionId == 2) {
-                headingLabel.setText("Manage Patients.");
-                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/image 2.png")));
+                headingLabel.setText("Schedule New Appointment.");
+                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/image 5.png")));
                 stepsLabel.setText("<html>" +
-                    "1. Search Patient: Type the name or ID in the search bar.<br>" +
-                    "2. View Details: Click on the patient record to view history.<br>" +
-                    "3. Update Info: Modify contact details or address if needed.<br>" +
-                    "4. Save Changes: Click update to store the modifications." +
+                    "step 1: Click Patient Request from the side bar.<br>" +
+                    "step 2: Review the patient requests list in the table with details like Req ID,<br> Patient ID, Name, Email, Date, Slot, Notes, and Status.<br>" +
+                    "step 3: To process a request, select the specific patient row from the table.<br>" +
+                    "    ---- Confirm Request: Click the 'Confirm Request' button to approve a pending request ---- <br>" +
+                    "    ---- Reject Request: Click the 'Reject Request' button to decline the request ---- <br>" +
+                    "step 4: Schedule Appointment: Click 'Schedule Appointment' <br>to open the appointment scheduling window.<br>" +
+                    "    ---- Patient Id: Automatically filled from the selected request ---- <br>" +
+                    "    ---- Patient Name: Displays the patient's name ---- <br>" +
+                    "    ---- Select Dentist: Choose the appropriate dentist and specialty from the dropdown ---- <br>" +
+                    "    ---- Appointment Date: Pick the date using the interactive calendar picker ---- <br>" +
+                    "    ---- Time Slot: Select the available time slot from the dropdown options ---- " +
                     "</html>");
             } else if (sectionId == 3) {
                 headingLabel.setText("Billing & Invoices.");
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/image 3.png")));
                 stepsLabel.setText("<html>" +
-                    "1. Select Appointment: Choose the completed session from the list.<br>" +
-                    "2. Add Charges: Include consultation and treatment costs.<br>" +
-                    "3. Apply Discounts: Enter promo codes or concessions if applicable.<br>" +
-                    "4. Print Receipt: Click print to generate the bill." +
+                    "step 1: Click Billing from the side bar to open the Billing & <br>Invoice Management module.<br>" +
+                    "step 2: Search and Select Appointment: Use the search bar or select <br>an appointment record from the top table (displays Appt ID, Appt Custom ID, Patient Name, Patient Custom ID, and Date).<br>" +
+                    "step 3: Patient & Doctor Info: Review the populated patient details <br>(Name, ID, Phone, Age) and appointment info.<br>" +
+                    "step 4: Clinical Summary: Check the treatments received, tooth<br> number, X-rays taken, issued prescriptions, and doctor's clinical notes.<br>" +
+                    "step 5: Invoice Calculation: Review and input charges for Fee 1,<br> Treatment cost, X-ray Fee 3, Consultation Fee, Other Charges, and apply any discounts (-).<br>" +
+                    "step 6: Select Payment Method: Choose either 'Cash' or 'Card' as the<br> payment option.<br>" +
+                    "step 7: Save or Print: Click 'Update Bill' to save changes or 'Print Bill' <br>to generate the final receipt." +
                     "</html>");
             }
         }
@@ -109,6 +122,8 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         jPanel1.revalidate();
         jPanel1.repaint();
     }
+    
+    
     
     private void makeCornersRounded() {
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -161,6 +176,11 @@ public class ReceptionHelpF extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(30, 109, 211));
         jPanel1.setForeground(new java.awt.Color(38, 140, 187));
+        jPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jPanel1MousePressed(evt);
+            }
+        });
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/close (2).png"))); // NOI18N
         jLabel2.setToolTipText("");
@@ -296,7 +316,7 @@ public class ReceptionHelpF extends javax.swing.JFrame {
                         .addGap(52, 52, 52)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(47, 47, 47)
+                                .addGap(20, 20, 20)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(headingLabel)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -374,6 +394,10 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         // TODO add your handling code here:
         toggleContent(3);
     }//GEN-LAST:event_arroeDownButton2ActionPerformed
+
+    private void jPanel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MousePressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jPanel1MousePressed
 
     /**
      * @param args the command line arguments
