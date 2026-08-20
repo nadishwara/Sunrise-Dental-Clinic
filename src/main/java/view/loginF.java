@@ -7,6 +7,7 @@ package view;
 import DAO.UserDAO;
 import java.awt.geom.RoundRectangle2D;
 import model.User;
+import util.InputValidator;
 
 /**
  *
@@ -201,9 +202,9 @@ public class loginF extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-         String email = jTextField1.getText().trim();
-        String password = jPasswordField1.getText().trim();
-        
+        String email = InputValidator.sanitizeInput(jTextField1.getText());
+        String password = new String(jPasswordField1.getPassword()).trim();
+
         if (email.isEmpty() || password.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
@@ -214,9 +215,29 @@ public class loginF extends javax.swing.JFrame {
             return;
         }
 
+        if (!InputValidator.isValidEmail(email)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this, 
+                "Please enter a valid email address (e.g., user@example.com)!", 
+                "Validation Error", 
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!InputValidator.isValidPassword(password)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this, 
+                "Password must be at least 6 characters long!", 
+                "Validation Error", 
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         UserDAO userDAO = new UserDAO();
         User loggedUser = userDAO.authenticateUser(email, password);
-            
+
         if (loggedUser != null) {
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
@@ -224,14 +245,11 @@ public class loginF extends javax.swing.JFrame {
                 "Success", 
                 javax.swing.JOptionPane.INFORMATION_MESSAGE
             );
-//            dashboardF dashboard = new dashboardF(loggedUser);
-//            dashboard.setVisible(true);
-//            this.dispose();
 
-                dashboardF dashboard = new dashboardF(loggedUser);
-                dashboard.setVisible(true);
-                this.dispose();
-        
+            dashboardF dashboard = new dashboardF(loggedUser);
+            dashboard.setVisible(true);
+            this.dispose();
+
         } else {
             javax.swing.JOptionPane.showMessageDialog(
                 this, 
