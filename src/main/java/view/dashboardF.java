@@ -73,12 +73,13 @@ public class dashboardF extends javax.swing.JFrame {
                 }
             }
         });
+//        panelBorder1.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 3, 3, new java.awt.Color(210, 210, 210)));
     }
 
     private void init() {
         setLocationRelativeTo(null);
         menu1.initMoving(this);
-
+        
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
         mainPanel.setOpaque(false);
@@ -88,7 +89,7 @@ public class dashboardF extends javax.swing.JFrame {
         panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
 
         patientRequestView = new view.forms.PatientRequestForm();
-
+       
         initViews();
 
         menu1.addEventMenuSelected(new swing.EventMenuSelected() {

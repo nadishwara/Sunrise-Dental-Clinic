@@ -40,6 +40,10 @@ public class Menu extends javax.swing.JPanel {
     public void initMenu(String role) {
         this.userRole = (role != null) ? role : "";
 
+        if (helpLabel != null) {
+            helpLabel.setVisible("RECEPTIONIST".equalsIgnoreCase(this.userRole));
+        }
+
         listMenu1.clear();
 
         listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));

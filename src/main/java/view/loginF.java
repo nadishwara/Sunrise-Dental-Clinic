@@ -21,6 +21,7 @@ public class loginF extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         makeCornersRounded();
+        roundedPanel1.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 3, 3, new java.awt.Color(210, 210, 210)));
     }
 
     private void makeCornersRounded() {
