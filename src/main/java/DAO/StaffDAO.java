@@ -17,7 +17,31 @@ import util.IdGenerator;
 public class StaffDAO {
 
     public boolean registerStaff(User user, Staff staff) {
-        String insertUserSql = "INSERT INTO users (username, email, password_hash, role, custom_id) VALUES (?, ?, ?, ?, ?)";
+        if (user == null || staff == null) {
+            System.err.println("Staff Registration Error: User or Staff object is null.");
+            return false;
+        }
+
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty() ||
+            user.getEmail() == null || user.getEmail().trim().isEmpty() ||
+            user.getPassword() == null || user.getPassword().isEmpty() ||
+            staff.getFullName() == null || staff.getFullName().trim().isEmpty()) {
+            System.err.println("Staff Registration Error: Required fields are empty.");
+            return false;
+        }
+
+        UserDAO userDAO = new UserDAO();
+        if (userDAO.isUsernameExists(user.getUsername())) {
+            System.err.println("Staff Registration Error: Username already taken.");
+            return false;
+        }
+
+        if (userDAO.isEmailExists(user.getEmail())) {
+            System.err.println("Staff Registration Error: Email already exists.");
+            return false;
+        }
+
+        String insertUserSql = "INSERT INTO users (username, email, password_hash, role, custom_id, status) VALUES (?, ?, ?, ?, ?, ?)";
         String updateCustomIdSql = "UPDATE users SET custom_id = ? WHERE user_id = ?";
         String insertStaffSql = "INSERT INTO staff (user_id, custom_staff_id, full_name, contact_no, specialization) VALUES (?, ?, ?, ?, ?)";
 
@@ -32,11 +56,12 @@ public class StaffDAO {
             String hashedPassword = BCrypt.withDefaults().hashToString(12, user.getPassword().toCharArray());
 
             try (PreparedStatement userStmt = conn.prepareStatement(insertUserSql, Statement.RETURN_GENERATED_KEYS)) {
-                userStmt.setString(1, user.getUsername());
-                userStmt.setString(2, user.getEmail());
+                userStmt.setString(1, user.getUsername().trim());
+                userStmt.setString(2, user.getEmail().trim());
                 userStmt.setString(3, hashedPassword);
                 userStmt.setString(4, user.getRole());
                 userStmt.setString(5, tempCustomId);
+                userStmt.setString(6, user.getStatus() != null ? user.getStatus() : "ACTIVE");
 
                 int affectedStaff = userStmt.executeUpdate();
                 if (affectedStaff == 0) {
@@ -64,14 +89,16 @@ public class StaffDAO {
             try (PreparedStatement staffStmt = conn.prepareStatement(insertStaffSql)) {
                 staffStmt.setInt(1, generatedUserId);
                 staffStmt.setString(2, customId);
-                staffStmt.setString(3, staff.getFullName());
-                staffStmt.setString(4, staff.getContactNo());
-                staffStmt.setString(5, staff.getSpecialization());
+                staffStmt.setString(3, staff.getFullName().trim());
+                staffStmt.setString(4, staff.getContactNo() != null ? staff.getContactNo().trim() : null);
+                staffStmt.setString(5, (staff.getSpecialization() != null && !staff.getSpecialization().trim().isEmpty()) 
+                        ? staff.getSpecialization().trim() : "General");
 
                 staffStmt.executeUpdate();
             }
 
             conn.commit();
+            user.setUserId(generatedUserId);
             user.setCustomId(customId);
             return true;
 
@@ -83,7 +110,7 @@ public class StaffDAO {
                     ex.printStackTrace();
                 }
             }
-            System.out.println("Staff Register SQL Error: " + e.getMessage());
+            System.err.println("Staff Register SQL Error: " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
@@ -106,7 +133,9 @@ public class StaffDAO {
                 + "WHERE UPPER(u.role) = 'DENTIST' "
                 + "AND (u.status IS NULL OR UPPER(u.status) = 'ACTIVE' OR u.status = '1')";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Staff staff = new Staff();

@@ -10,6 +10,7 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.JOptionPane;
 import model.Staff;
 import model.User;
+import util.InputValidator;
 import view.dentistViews.helpRegistrationF;
 
 /**
@@ -27,17 +28,17 @@ public class registerF extends javax.swing.JFrame {
         toggleStaffFields(false);
         makeCornersRounded();
     }
-    
+
     private void toggleStaffFields(boolean visible) {
-        jLabel8.setVisible(visible); 
-        jLabel9.setVisible(visible);  
+        jLabel8.setVisible(visible);
+        jLabel9.setVisible(visible);
         jLabel10.setVisible(visible);
 
         fullNameTextField.setVisible(visible);
         contactTextField.setVisible(visible);
         specialization.setVisible(visible);
     }
-    
+
     private void makeCornersRounded() {
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -375,19 +376,29 @@ public class registerF extends javax.swing.JFrame {
     }//GEN-LAST:event_passwordTextFieldActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String username = unameText.getText().trim();
-        String email = emailTextField.getText().trim();
+        String username = InputValidator.sanitizeInput(unameText.getText());
+        String email = InputValidator.sanitizeInput(emailTextField.getText());
         String password = passwordTextField.getText().trim();
         String confirmPassword = confirmPassTextField.getText().trim();
         String selectedRole = jComboBox1.getSelectedItem().toString();
 
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all primary fields!", "Validation Error", JOptionPane.WARNING_MESSAGE);
+        if (!InputValidator.isValidUsername(username)) {
+            JOptionPane.showMessageDialog(this, "Username must be 3-20 characters long and contain only letters, numbers, or underscores.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!InputValidator.isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid email address (e.g., example@mail.com).", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!InputValidator.isValidPassword(password)) {
+            JOptionPane.showMessageDialog(this, "Password must be at least 6 characters long.", "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            JOptionPane.showMessageDialog(this, "Passwords do not match!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Passwords do not match. Please try again.", "Validation Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -398,20 +409,25 @@ public class registerF extends javax.swing.JFrame {
             boolean isRegistered = userDAO.registerUser(newUser);
 
             if (isRegistered) {
-                JOptionPane.showMessageDialog(this, "Patient Registered Successfully!\nYour Custom ID: " + newUser.getCustomId(), "Success", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Patient Registered Successfully!\nGenerated Custom ID: " + newUser.getCustomId(), "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
                 new loginF().setVisible(true);
                 this.dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Registration Failed! Email or Username might already exist.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Registration Failed! Email or Username is already registered.", "Registration Error", JOptionPane.ERROR_MESSAGE);
             }
 
         } else {
-            String fullName = fullNameTextField.getText().trim();
-            String contactNo = contactTextField.getText().trim();
-            String spec = specialization.getText().trim();
+            String fullName = InputValidator.sanitizeInput(fullNameTextField.getText());
+            String contactNo = InputValidator.sanitizeInput(contactTextField.getText());
+            String spec = InputValidator.sanitizeInput(specialization.getText());
 
-            if (fullName.isEmpty() || contactNo.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in Full Name and Contact Number for Staff!", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            if (!InputValidator.isValidFullName(fullName)) {
+                JOptionPane.showMessageDialog(this, "Full Name must contain only alphabets and spaces (2-50 characters).", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (!InputValidator.isValidContactNumber(contactNo)) {
+                JOptionPane.showMessageDialog(this, "Contact Number must be exactly 10 digits.", "Validation Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -424,11 +440,11 @@ public class registerF extends javax.swing.JFrame {
             boolean isRegistered = staffDAO.registerStaff(newUser, newStaff);
 
             if (isRegistered) {
-                JOptionPane.showMessageDialog(this, "Staff Member Registered Successfully!\nCustom Staff ID: " + newUser.getCustomId(), "Success", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Staff Member Registered Successfully!\nGenerated Staff ID: " + newUser.getCustomId(), "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
                 new loginF().setVisible(true);
                 this.dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Staff Registration Failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Staff Registration Failed! Check if the user already exists.", "Registration Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -450,19 +466,19 @@ public class registerF extends javax.swing.JFrame {
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         String selectedRole = jComboBox1.getSelectedItem().toString();
 
-    if (selectedRole.equalsIgnoreCase("PATIENT")) {
-        toggleStaffFields(false);
-    } else {
-        jLabel8.setVisible(true);
-        fullNameTextField.setVisible(true);
-        
-        jLabel9.setVisible(true);
-        contactTextField.setVisible(true);
+        if (selectedRole.equalsIgnoreCase("PATIENT")) {
+            toggleStaffFields(false);
+        } else {
+            jLabel8.setVisible(true);
+            fullNameTextField.setVisible(true);
 
-        boolean isDentist = selectedRole.equalsIgnoreCase("DENTIST");
-        jLabel10.setVisible(isDentist);
-        specialization.setVisible(isDentist);
-    }
+            jLabel9.setVisible(true);
+            contactTextField.setVisible(true);
+
+            boolean isDentist = selectedRole.equalsIgnoreCase("DENTIST");
+            jLabel10.setVisible(isDentist);
+            specialization.setVisible(isDentist);
+        }
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void fullNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fullNameTextFieldActionPerformed

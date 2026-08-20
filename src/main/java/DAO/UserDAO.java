@@ -13,7 +13,68 @@ import util.IdGenerator;
 
 public class UserDAO {
 
+    public boolean isUsernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) return false;
+        String sql = "SELECT user_id FROM users WHERE username = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isEmailExists(String email) {
+        if (email == null || email.trim().isEmpty()) return false;
+        String sql = "SELECT user_id FROM users WHERE email = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isEmailExistsForOtherUser(String email, int currentUserId) {
+        if (email == null || email.trim().isEmpty()) return false;
+        String sql = "SELECT user_id FROM users WHERE email = ? AND user_id != ?";
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email.trim());
+            stmt.setInt(2, currentUserId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean registerUser(User user) {
+        if (user == null || user.getUsername() == null || user.getEmail() == null || user.getPassword() == null) {
+            System.err.println("Registration Error: Invalid input data (Null values detected).");
+            return false;
+        }
+
+        if (isUsernameExists(user.getUsername())) {
+            System.err.println("Registration Error: Username already taken.");
+            return false;
+        }
+
+        if (isEmailExists(user.getEmail())) {
+            System.err.println("Registration Error: Email already registered.");
+            return false;
+        }
+
         String sql = "INSERT INTO users (custom_id, username, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?)";
         String updateCustomIdSql = "UPDATE users SET custom_id = ? WHERE user_id = ?";
 
@@ -29,8 +90,8 @@ public class UserDAO {
 
             try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, tempCustomId);
-                stmt.setString(2, user.getUsername());
-                stmt.setString(3, user.getEmail());
+                stmt.setString(2, user.getUsername().trim());
+                stmt.setString(3, user.getEmail().trim());
                 stmt.setString(4, hashedPassword);
                 stmt.setString(5, user.getRole());
                 stmt.setString(6, user.getStatus() != null ? user.getStatus() : "ACTIVE");
@@ -91,17 +152,22 @@ public class UserDAO {
     }
 
     public User authenticateUser(String email, String plainPassword) {
+        if (email == null || email.trim().isEmpty() || plainPassword == null || plainPassword.isEmpty()) {
+            return null;
+        }
+
         String sql = "SELECT u.*, s.staff_id, s.full_name, "
-               + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
-               + "FROM users u "
-               + "LEFT JOIN staff s ON u.user_id = s.user_id "
-               + "WHERE u.email = ?";
+                   + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
+                   + "FROM users u "
+                   + "LEFT JOIN staff s ON u.user_id = s.user_id "
+                   + "WHERE u.email = ?";
 
         User user = null;
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, email);
+            stmt.setString(1, email.trim());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -143,15 +209,18 @@ public class UserDAO {
     }
 
     public User getUserById(int userId) {
+        if (userId <= 0) return null;
+
         String sql = "SELECT u.*, s.full_name, "
-                + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
+                + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no, "
                 + "COALESCE(u.address, s.address) AS address "
                 + "FROM users u "
                 + "LEFT JOIN staff s ON u.user_id = s.user_id "
                 + "WHERE u.user_id = ?";
         User user = null;
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -176,16 +245,27 @@ public class UserDAO {
     }
 
     public boolean updateUserProfile(int userId, String username, String email, String newPassword) {
+        if (userId <= 0 || username == null || username.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            return false;
+        }
+
+        // Duplicate Check for update
+        if (isEmailExistsForOtherUser(email, userId)) {
+            System.err.println("Update Profile Error: Email is already used by another account.");
+            return false;
+        }
+
         boolean hasPasswordUpdate = (newPassword != null && !newPassword.trim().isEmpty());
 
         String sql = hasPasswordUpdate
                 ? "UPDATE users SET username = ?, email = ?, password_hash = ? WHERE user_id = ?"
                 : "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, username);
-            stmt.setString(2, email);
+            stmt.setString(1, username.trim());
+            stmt.setString(2, email.trim());
 
             if (hasPasswordUpdate) {
                 String hashedPassword = BCrypt.withDefaults().hashToString(12, newPassword.toCharArray());
