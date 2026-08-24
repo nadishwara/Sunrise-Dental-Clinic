@@ -52,14 +52,12 @@ public class LoginControllerTest {
         assertEquals("INVALID_CREDENTIALS", result);
     }
 
-    // Valid Test using DB Row 1 (sepiolTest@email.com / password123)
     @Test
     public void testValidPatientLogin() {
         String result = controller.login("sepiolTest@email.com", "password123");
         assertEquals("LOGIN_SUCCESS", result);
     }
 
-    // Valid Test using DB Row 27 (nimal@patient.com / default123)
     @Test
     public void testAnotherValidPatientLogin() {
         String result = controller.login("nimal@patient.com", "default123");
