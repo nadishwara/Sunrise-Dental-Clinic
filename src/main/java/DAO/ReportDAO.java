@@ -179,7 +179,6 @@ public class ReportDAO {
         return model;
     }
 
-    // Receptionist Details & Activities Export Query
     public DefaultTableModel getReceptionistExportData() {
         String[] columnNames = {"Receptionist ID", "Receptionist Name", "Appointment ID", "Appointment Date", "Patient Name", "Dentist Name", "Bill ID", "Net Amount (LKR)", "Payment Status"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
@@ -217,7 +216,6 @@ public class ReportDAO {
         return model;
     }
 
-// Dentist Details & Treatments Export Query
     public DefaultTableModel getDentistExportData() {
         String[] columnNames = {"Dentist ID", "Dentist Name", "Appointment ID", "Patient Name", "Appointment Date", "Treatment Name", "Tooth No", "Service Cost (LKR)", "Clinical Notes"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
@@ -254,7 +252,6 @@ public class ReportDAO {
         return model;
     }
 
-// Patient Details & History Export Query
     public DefaultTableModel getPatientExportData() {
         String[] columnNames = {"Patient ID", "Patient Name", "Email", "Contact", "Appointment ID", "Appointment Date", "Treatment Name", "Bill Amount (LKR)", "Payment Status"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);

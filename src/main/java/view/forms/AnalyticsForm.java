@@ -7,9 +7,13 @@ package view.forms;
 import DAO.AnalyticsDAO;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -40,47 +44,56 @@ public class AnalyticsForm extends javax.swing.JPanel {
     }
 
     public final void initDashboardCharts() {
-    JPanel chartContainer = new JPanel(new java.awt.GridLayout(0, 2, 12, 12));
-    chartContainer.setBackground(new Color(245, 245, 250));
+        JPanel chartContainer = new JPanel(new GridLayout(0, 2, 15, 15));
+        chartContainer.setBackground(new Color(245, 245, 250));
 
-    ChartPanel p1 = (ChartPanel) createPatientsTodayPieChart();
-    ChartPanel p2 = (ChartPanel) createWeeklyPatientsBarChart();
-    ChartPanel p3 = (ChartPanel) createTreatmentDistributionChart();
+        chartContainer.setBorder(BorderFactory.createEmptyBorder(40, 20, 20, 25));
 
-    p1.setMouseWheelEnabled(false);
-    p2.setMouseWheelEnabled(false);
-    p3.setMouseWheelEnabled(false);
+        ChartPanel p1 = configureChartPanel(createPatientsTodayPieChart());
+        ChartPanel p2 = configureChartPanel(createWeeklyPatientsBarChart());
+        ChartPanel p3 = configureChartPanel(createTreatmentDistributionChart());
 
-    java.awt.Dimension compactChartSize = new java.awt.Dimension(360, 320);
-    p1.setPreferredSize(compactChartSize);
-    p2.setPreferredSize(compactChartSize);
-    p3.setPreferredSize(compactChartSize);
+        chartContainer.add(p1);
+        chartContainer.add(p2);
+        chartContainer.add(p3);
 
-    chartContainer.add(p1);
-    chartContainer.add(p2);
-    chartContainer.add(p3);
+        JPanel scrollContent = new JPanel(new BorderLayout());
+        scrollContent.setBackground(new Color(245, 245, 250));
+        scrollContent.add(chartContainer, BorderLayout.NORTH);
 
-    JPanel scrollContent = new JPanel(new java.awt.BorderLayout());
-    scrollContent.setBackground(new Color(245, 245, 250));
-    scrollContent.add(chartContainer, java.awt.BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane(scrollContent);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setBorder(null);
 
-    javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(scrollContent);
-    
-    scrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-    scrollPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        removeAll();
+        setLayout(new BorderLayout());
+        add(scrollPane, BorderLayout.CENTER);
 
-    scrollPane.getVerticalScrollBar().setUnitIncrement(22);
-    scrollPane.setBorder(null);
+        revalidate();
+        repaint();
+    }
 
-    removeAll();
-    setLayout(new java.awt.BorderLayout());
-    add(scrollPane, java.awt.BorderLayout.CENTER);
+    private ChartPanel configureChartPanel(JFreeChart chart) {
+        chart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        if (chart.getLegend() != null) {
+            chart.getLegend().setItemFont(new Font("Segoe UI", Font.PLAIN, 11));
+        }
 
-    revalidate();
-    repaint();
-}
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setMouseWheelEnabled(false);
 
-    private JPanel createPatientsTodayPieChart() {
+        chartPanel.setMinimumDrawWidth(0);
+        chartPanel.setMinimumDrawHeight(0);
+        chartPanel.setMaximumDrawWidth(2000);
+        chartPanel.setMaximumDrawHeight(2000);
+
+        chartPanel.setPreferredSize(new Dimension(340, 250));
+        return chartPanel;
+    }
+
+    private JFreeChart createPatientsTodayPieChart() {
         int todayCount = analyticsDAO.getTotalPatientsToday();
 
         DefaultPieDataset dataset = new DefaultPieDataset();
@@ -101,23 +114,25 @@ public class AnalyticsForm extends javax.swing.JPanel {
         plot.setBackgroundPaint(Color.WHITE);
         plot.setSectionPaint("Patients Today (" + todayCount + ")", new Color(0, 153, 255));
         plot.setSectionPaint("Remaining Capacity", new Color(220, 220, 220));
-        plot.setLabelFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        plot.setLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
 
-        return new ChartPanel(chart);
+        return chart;
     }
 
-    private JPanel createWeeklyPatientsBarChart() {
+    private JFreeChart createWeeklyPatientsBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         Map<String, Integer> weeklyData = analyticsDAO.getWeeklyPatientCount();
-        for (Map.Entry<String, Integer> entry : weeklyData.entrySet()) {
-            dataset.addValue(entry.getValue(), "Patients", entry.getKey());
+        if (weeklyData != null) {
+            for (Map.Entry<String, Integer> entry : weeklyData.entrySet()) {
+                dataset.addValue(entry.getValue(), "Patients", entry.getKey());
+            }
         }
 
         JFreeChart chart = ChartFactory.createBarChart(
                 "Weekly Patient Traffic",
-                "Day of Week",
-                "Patient Count",
+                "Day",
+                "Count",
                 dataset,
                 PlotOrientation.VERTICAL,
                 false,
@@ -131,10 +146,10 @@ public class AnalyticsForm extends javax.swing.JPanel {
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, new Color(46, 204, 113));
 
-        return new ChartPanel(chart);
+        return chart;
     }
 
-    private JPanel createTreatmentDistributionChart() {
+    private JFreeChart createTreatmentDistributionChart() {
         DefaultPieDataset dataset = new DefaultPieDataset();
 
         Map<String, Integer> treatmentData = analyticsDAO.getTreatmentTypeDistribution();
@@ -144,13 +159,13 @@ public class AnalyticsForm extends javax.swing.JPanel {
                 if (key == null || key.trim().isEmpty()) {
                     key = "Unspecified / Unknown";
                 }
-
                 Integer value = entry.getValue();
                 if (value != null) {
                     dataset.setValue(key, value);
                 }
             }
         }
+
         JFreeChart chart = ChartFactory.createPieChart(
                 "Treatment Type Breakdown",
                 dataset,
@@ -161,8 +176,9 @@ public class AnalyticsForm extends javax.swing.JPanel {
 
         PiePlot plot = (PiePlot) chart.getPlot();
         plot.setBackgroundPaint(Color.WHITE);
+        plot.setLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
 
-        return new ChartPanel(chart);
+        return chart;
     }
 
     /**

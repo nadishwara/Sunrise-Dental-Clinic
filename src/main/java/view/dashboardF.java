@@ -80,115 +80,105 @@ public class dashboardF extends javax.swing.JFrame {
     }
 
     private void init() {
-        setLocationRelativeTo(null);
-        menu1.initMoving(this);
+    setLocationRelativeTo(null);
+    menu1.initMoving(this);
 
-        cardLayout = new CardLayout();
-        mainPanel = new JPanel(cardLayout);
-        mainPanel.setOpaque(false);
+    cardLayout = new CardLayout();
+    mainPanel = new JPanel(cardLayout);
+    mainPanel.setOpaque(false);
 
-        panelBorder1.setLayout(new java.awt.BorderLayout());
-        panelBorder1.add(menu1, java.awt.BorderLayout.WEST);
-        panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
+    panelBorder1.setLayout(new java.awt.BorderLayout());
+    panelBorder1.add(menu1, java.awt.BorderLayout.WEST);
+    panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        patientRequestView = new view.forms.PatientRequestForm();
+    patientRequestView = new view.forms.PatientRequestForm();
 
-        initViews();
+    initViews();
 
-        menu1.addEventMenuSelected(new swing.EventMenuSelected() {
-            @Override
-            public void selected(int index) {
-                User currentUser = menu1.getLoggedInUser() != null ? menu1.getLoggedInUser() : loggedInUser;
-                String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
+    menu1.addEventMenuSelected(new swing.EventMenuSelected() {
+        @Override
+        public void selected(int index) {
+            User currentUser = menu1.getLoggedInUser() != null ? menu1.getLoggedInUser() : loggedInUser;
+            String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
 
-                boolean isAdmin = "ADMIN".equalsIgnoreCase(role.trim());
-                boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
-                boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
-                boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(role.trim());
+            boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
+            boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
+            boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
 
-//                int logoutIndex = isReceptionist ? 5 : (isPatient ? 4 : 4);
-                int logoutIndex = isReceptionist ? 5 : 4;
+            // Adjusted logout index: Receptionist = 5, Admin = 3, Dentist/Patient = 4
+            int logoutIndex = isReceptionist ? 5 : (isAdmin ? 3 : 4);
 
-                if (index == logoutIndex) {
-                    int opt = JOptionPane.showConfirmDialog(
-                            null,
-                            "Are you sure you want to Logout?",
-                            "Logout Confirmation",
-                            JOptionPane.YES_NO_OPTION
-                    );
-                    if (opt == JOptionPane.YES_OPTION) {
-                        new loginF().setVisible(true);
-                        dispose();
-                    }
-                    return;
+            if (index == logoutIndex) {
+                int opt = JOptionPane.showConfirmDialog(
+                        null,
+                        "Are you sure you want to Logout?",
+                        "Logout Confirmation",
+                        JOptionPane.YES_NO_OPTION
+                );
+                if (opt == JOptionPane.YES_OPTION) {
+                    new loginF().setVisible(true);
+                    dispose();
                 }
-
-                if (index == 0) {
-                    if (isAdmin) {
-                        cardLayout.show(mainPanel, "REPORT_ANALYSIS");
-                    } else if (isReceptionist || isDentist) {
-                        cardLayout.show(mainPanel, "ANALYTICS_HOME");
-                    } else {
-                        cardLayout.show(mainPanel, "HOME");
-                    }
-                } else if (index == 1) {
-                    cardLayout.show(mainPanel, "PROFILE");
-                } else if (index == 2) {
-                    if (isReceptionist) {
-                        cardLayout.show(mainPanel, "NEW_BOOKING");
-                    } else if (isPatient) {
-                        cardLayout.show(mainPanel, "MEDICAL_HISTORY");
-                    } else if (isDentist) {
-                        cardLayout.show(mainPanel, "MANAGE_PATIENTS");
-                    } else {
-                        cardLayout.show(mainPanel, "PATIENTS_GENERAL");
-                    }
-                } else if (index == 3) {
-                    if (isReceptionist) {
-                        patientRequestView.loadTableData();
-                        cardLayout.show(mainPanel, "PATIENT_REQUEST");
-                    } else if (isPatient) {
-                        cardLayout.show(mainPanel, "BILLING_PAYMENTS");
-                    } else if (isDentist) {
-                        if (dailyAppointmentView != null) {
-                            dailyAppointmentView.loadDailySchedule();
-                        }
-                        cardLayout.show(mainPanel, "DAILY_SCHEDULE");
-                    }
-                } else if (index == 4 && isReceptionist) {
-                    cardLayout.show(mainPanel, "PATIENT_BILLING");
-                } else if (index == logoutIndex) {
-                    int opt = JOptionPane.showConfirmDialog(
-                            null,
-                            "Are you sure you want to Logout?",
-                            "Logout Confirmation",
-                            JOptionPane.YES_NO_OPTION
-                    );
-                    if (opt == JOptionPane.YES_OPTION) {
-                        new loginF().setVisible(true);
-                        dispose();
-                    }
-                }
+                return;
             }
-        });
 
-        String role = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
-        if ("ADMIN".equalsIgnoreCase(role.trim())) {
-            cardLayout.show(mainPanel, "REPORT_ANALYSIS");
-        } else if ("RECEPTIONIST".equalsIgnoreCase(role.trim()) || "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim())) {
-            cardLayout.show(mainPanel, "ANALYTICS_HOME");
-        } else {
-            cardLayout.show(mainPanel, "HOME");
+            if (index == 0) {
+                // Admin, Receptionist, and Dentist all load ANALYTICS_HOME on Dashboard click
+                if (isAdmin || isReceptionist || isDentist) {
+                    cardLayout.show(mainPanel, "ANALYTICS_HOME");
+                } else {
+                    cardLayout.show(mainPanel, "HOME");
+                }
+            } else if (index == 1) {
+                cardLayout.show(mainPanel, "PROFILE");
+            } else if (index == 2) {
+                if (isAdmin) {
+                    // Admin clicking index 2 opens Report Analysis
+                    cardLayout.show(mainPanel, "REPORT_ANALYSIS");
+                } else if (isReceptionist) {
+                    cardLayout.show(mainPanel, "NEW_BOOKING");
+                } else if (isPatient) {
+                    cardLayout.show(mainPanel, "MEDICAL_HISTORY");
+                } else if (isDentist) {
+                    cardLayout.show(mainPanel, "MANAGE_PATIENTS");
+                } else {
+                    cardLayout.show(mainPanel, "PATIENTS_GENERAL");
+                }
+            } else if (index == 3) {
+                if (isReceptionist) {
+                    patientRequestView.loadTableData();
+                    cardLayout.show(mainPanel, "PATIENT_REQUEST");
+                } else if (isPatient) {
+                    cardLayout.show(mainPanel, "BILLING_PAYMENTS");
+                } else if (isDentist) {
+                    if (dailyAppointmentView != null) {
+                        dailyAppointmentView.loadDailySchedule();
+                    }
+                    cardLayout.show(mainPanel, "DAILY_SCHEDULE");
+                }
+            } else if (index == 4 && isReceptionist) {
+                cardLayout.show(mainPanel, "PATIENT_BILLING");
+            }
         }
+    });
 
-        if (loggedInUser != null) {
-            String username = loggedInUser.getUsername();
-            String userRole = loggedInUser.getRole();
-            menu1.setUserProfile(username, userRole);
-        } else {
-            menu1.setUserProfile("Guest User", "N/A");
-        }
+    // Default view when login frame opens
+    String role = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
+    if ("ADMIN".equalsIgnoreCase(role.trim()) || "RECEPTIONIST".equalsIgnoreCase(role.trim()) || "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim())) {
+        cardLayout.show(mainPanel, "ANALYTICS_HOME");
+    } else {
+        cardLayout.show(mainPanel, "HOME");
     }
+
+    if (loggedInUser != null) {
+        String username = loggedInUser.getUsername();
+        String userRole = loggedInUser.getRole();
+        menu1.setUserProfile(username, userRole);
+    } else {
+        menu1.setUserProfile("Guest User", "N/A");
+    }
+}
 
     private void initViews() {
         userProfileView = new view.forms.UserProfile();

@@ -64,7 +64,6 @@ public class reportAnalysis extends javax.swing.JPanel {
 
     private void loadAnalyticsCharts() {
         try {
-            // Bar Chart Processing
             DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
             Map<String, Double> revenueData = reportDAO.getRevenueReport("MONTHLY");
 
@@ -92,7 +91,6 @@ public class reportAnalysis extends javax.swing.JPanel {
             pnlBarChart.revalidate();
             pnlBarChart.repaint();
 
-            // Pie Chart Processing
             DefaultPieDataset pieDataset = new DefaultPieDataset();
             List<Object[]> topTreatments = reportDAO.getTopTreatments();
 
@@ -172,6 +170,8 @@ public class reportAnalysis extends javax.swing.JPanel {
         jLabel13 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
+
+        jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
         jPanel2.setBackground(new java.awt.Color(102, 102, 255));
 
