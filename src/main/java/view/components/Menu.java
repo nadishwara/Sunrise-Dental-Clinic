@@ -49,7 +49,9 @@ public class Menu extends javax.swing.JPanel {
         listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("2", "User Profile", Model_Menu.MenuType.MENU));
 
-        if ("RECEPTIONIST".equalsIgnoreCase(userRole)) {
+        if ("ADMIN".equalsIgnoreCase(userRole)) {
+            listMenu1.addItem(new Model_Menu("3", "Reports & Analytics", Model_Menu.MenuType.MENU));
+        } else if ("RECEPTIONIST".equalsIgnoreCase(userRole)) {
             listMenu1.addItem(new Model_Menu("3", "Manage Appointment", Model_Menu.MenuType.MENU));
             listMenu1.addItem(new Model_Menu("4", "Patient Request", Model_Menu.MenuType.MENU));
             listMenu1.addItem(new Model_Menu("5", "Billing", Model_Menu.MenuType.MENU));

@@ -1,0 +1,625 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package view.adminView;
+
+import DAO.ReportDAO;
+import java.awt.BorderLayout;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+
+/**
+ *
+ * @author nadis
+ */
+public class reportAnalysis extends javax.swing.JPanel {
+
+    /**
+     * Creates new form reportAnalysis
+     */
+    private final ReportDAO reportDAO;
+
+    public reportAnalysis() {
+        initComponents();
+        this.reportDAO = new ReportDAO();
+        loadStatCards();
+        loadAnalyticsCharts();
+
+        pdfExportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pdfExportButtonActionPerformed(evt);
+            }
+        });
+
+        csvExportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                csvExportButtonActionPerformed(evt);
+            }
+        });
+    }
+
+    private void loadStatCards() {
+        double revenue = reportDAO.getTotalRevenue();
+        int activeStaff = reportDAO.getActiveStaffCount();
+        int todayAppointments = reportDAO.getTodayAppointmentsCount();
+        int totalPatients = reportDAO.getTotalPatientsCount();
+
+        setStatCardValues(
+                String.format("LKR %.2f", revenue),
+                String.valueOf(activeStaff),
+                String.valueOf(todayAppointments),
+                String.valueOf(totalPatients)
+        );
+    }
+
+    private void loadAnalyticsCharts() {
+        try {
+            // Bar Chart Processing
+            DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
+            Map<String, Double> revenueData = reportDAO.getRevenueReport("MONTHLY");
+
+            if (revenueData != null && !revenueData.isEmpty()) {
+                for (Map.Entry<String, Double> entry : revenueData.entrySet()) {
+                    barDataset.setValue(entry.getValue(), "Revenue", entry.getKey());
+                }
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart(
+                    "Monthly Revenue Trends",
+                    "Month",
+                    "Amount (LKR)",
+                    barDataset,
+                    PlotOrientation.VERTICAL,
+                    false, true, false
+            );
+
+            ChartPanel barChartPanel = new ChartPanel(barChart);
+            barChartPanel.setPreferredSize(new java.awt.Dimension(280, 200));
+
+            pnlBarChart.setLayout(new BorderLayout());
+            pnlBarChart.removeAll();
+            pnlBarChart.add(barChartPanel, BorderLayout.CENTER);
+            pnlBarChart.revalidate();
+            pnlBarChart.repaint();
+
+            // Pie Chart Processing
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            List<Object[]> topTreatments = reportDAO.getTopTreatments();
+
+            if (topTreatments != null) {
+                for (Object[] treatment : topTreatments) {
+                    String treatmentName = (String) treatment[0];
+                    Number totalCount = (Number) treatment[1];
+                    pieDataset.setValue(treatmentName, totalCount);
+                }
+            }
+
+            JFreeChart pieChart = ChartFactory.createPieChart(
+                    "Most Popular Treatments",
+                    pieDataset,
+                    true, true, false
+            );
+
+            ChartPanel pieChartPanel = new ChartPanel(pieChart);
+            pieChartPanel.setPreferredSize(new java.awt.Dimension(280, 200));
+
+            pnlPieChart.setLayout(new BorderLayout());
+            pnlPieChart.removeAll();
+            pnlPieChart.add(pieChartPanel, BorderLayout.CENTER);
+            pnlPieChart.revalidate();
+            pnlPieChart.repaint();
+
+        } catch (Exception e) {
+            System.err.println("Error loading analytics charts: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void setStatCardValues(String revenue, String activeStaff, String todayAppointments, String totalPatients) {
+        totalRevenueAmountLabel.setText(revenue);
+        activeStaffNoLabel.setText(activeStaff);
+        todayAppointmentNoLabel.setText(todayAppointments);
+        totalPatientCountLabel.setText(totalPatients);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel5 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        totalRevenueAmountLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        activeStaffNoLabel = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        todayAppointmentNoLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        totalPatientCountLabel = new javax.swing.JLabel();
+        pnlBarChart = new javax.swing.JPanel();
+        pnlPieChart = new javax.swing.JPanel();
+        pdfExportButton = new javax.swing.JButton();
+        csvExportButton = new javax.swing.JButton();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        receptionistDetailsExportCSVButton = new javax.swing.JButton();
+        patientAllDetailsExporCSVButton = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        receptionistDetailsExportCSVButton1 = new javax.swing.JButton();
+        jLabel13 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(255, 255, 255));
+
+        jPanel2.setBackground(new java.awt.Color(102, 102, 255));
+
+        jLabel1.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/money-growth.png"))); // NOI18N
+
+        jLabel2.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Total Revenue");
+
+        totalRevenueAmountLabel.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        totalRevenueAmountLabel.setForeground(new java.awt.Color(255, 255, 255));
+        totalRevenueAmountLabel.setText("no");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(jLabel1))
+                    .addComponent(jLabel2)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(45, 45, 45)
+                        .addComponent(totalRevenueAmountLabel)))
+                .addContainerGap(25, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(totalRevenueAmountLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel1.setBackground(new java.awt.Color(255, 204, 153));
+
+        jLabel3.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/staff.png"))); // NOI18N
+
+        jLabel4.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("Active Staff Count");
+
+        activeStaffNoLabel.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        activeStaffNoLabel.setForeground(new java.awt.Color(255, 255, 255));
+        activeStaffNoLabel.setText("no");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addComponent(jLabel3))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(68, 68, 68)
+                        .addComponent(activeStaffNoLabel)))
+                .addContainerGap(67, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jLabel4)
+                .addGap(14, 14, 14))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(activeStaffNoLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel3.setBackground(new java.awt.Color(204, 255, 204));
+
+        jLabel5.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/clock.png"))); // NOI18N
+
+        jLabel6.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel6.setText("Today's Appointments");
+
+        todayAppointmentNoLabel.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        todayAppointmentNoLabel.setForeground(new java.awt.Color(51, 51, 51));
+        todayAppointmentNoLabel.setText("no");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(45, 45, 45)
+                        .addComponent(todayAppointmentNoLabel)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addGap(68, 68, 68))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(todayAppointmentNoLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel4.setBackground(new java.awt.Color(153, 153, 153));
+
+        jLabel7.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/feedback.png"))); // NOI18N
+
+        jLabel8.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("Total Patients Registered");
+
+        totalPatientCountLabel.setFont(new java.awt.Font("Mongolian Baiti", 1, 18)); // NOI18N
+        totalPatientCountLabel.setForeground(new java.awt.Color(255, 255, 255));
+        totalPatientCountLabel.setText("no");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(45, 45, 45)
+                        .addComponent(totalPatientCountLabel)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel7)
+                .addGap(75, 75, 75))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(totalPatientCountLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        pnlBarChart.setBackground(new java.awt.Color(204, 255, 255));
+
+        javax.swing.GroupLayout pnlBarChartLayout = new javax.swing.GroupLayout(pnlBarChart);
+        pnlBarChart.setLayout(pnlBarChartLayout);
+        pnlBarChartLayout.setHorizontalGroup(
+            pnlBarChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 292, Short.MAX_VALUE)
+        );
+        pnlBarChartLayout.setVerticalGroup(
+            pnlBarChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 254, Short.MAX_VALUE)
+        );
+
+        pnlPieChart.setBackground(new java.awt.Color(204, 255, 255));
+
+        javax.swing.GroupLayout pnlPieChartLayout = new javax.swing.GroupLayout(pnlPieChart);
+        pnlPieChart.setLayout(pnlPieChartLayout);
+        pnlPieChartLayout.setHorizontalGroup(
+            pnlPieChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 280, Short.MAX_VALUE)
+        );
+        pnlPieChartLayout.setVerticalGroup(
+            pnlPieChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 254, Short.MAX_VALUE)
+        );
+
+        pdfExportButton.setBackground(new java.awt.Color(51, 51, 255));
+        pdfExportButton.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        pdfExportButton.setForeground(new java.awt.Color(255, 255, 255));
+        pdfExportButton.setText("Export PDF ");
+        pdfExportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pdfExportButtonActionPerformed(evt);
+            }
+        });
+
+        csvExportButton.setBackground(new java.awt.Color(0, 153, 0));
+        csvExportButton.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        csvExportButton.setForeground(new java.awt.Color(255, 255, 255));
+        csvExportButton.setText("Export CSV");
+        csvExportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                csvExportButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel9.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel9.setText("Export Total Revenue Reports :");
+
+        jLabel10.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel10.setText("Receptionist Details :");
+
+        jLabel11.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel11.setText("Total Patient Registration Detals :");
+
+        receptionistDetailsExportCSVButton.setBackground(new java.awt.Color(0, 153, 0));
+        receptionistDetailsExportCSVButton.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        receptionistDetailsExportCSVButton.setForeground(new java.awt.Color(255, 255, 255));
+        receptionistDetailsExportCSVButton.setText("Export CSV");
+        receptionistDetailsExportCSVButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                receptionistDetailsExportCSVButtonActionPerformed(evt);
+            }
+        });
+
+        patientAllDetailsExporCSVButton.setBackground(new java.awt.Color(0, 153, 0));
+        patientAllDetailsExporCSVButton.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        patientAllDetailsExporCSVButton.setForeground(new java.awt.Color(255, 255, 255));
+        patientAllDetailsExporCSVButton.setText("Export CSV");
+        patientAllDetailsExporCSVButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                patientAllDetailsExporCSVButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel12.setText("Dentist Details :");
+
+        receptionistDetailsExportCSVButton1.setBackground(new java.awt.Color(0, 153, 0));
+        receptionistDetailsExportCSVButton1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        receptionistDetailsExportCSVButton1.setForeground(new java.awt.Color(255, 255, 255));
+        receptionistDetailsExportCSVButton1.setText("Export CSV");
+        receptionistDetailsExportCSVButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                receptionistDetailsExportCSVButton1ActionPerformed(evt);
+            }
+        });
+
+        jLabel13.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        jLabel13.setText("Report Generate");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 830, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel5Layout.createSequentialGroup()
+                    .addGap(15, 15, 15)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(pnlBarChart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(jPanel5Layout.createSequentialGroup()
+                                    .addGap(20, 20, 20)
+                                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel10)
+                                        .addComponent(jLabel9)
+                                        .addComponent(jLabel12)
+                                        .addComponent(jLabel11))))
+                            .addGap(38, 38, 38)
+                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel5Layout.createSequentialGroup()
+                                    .addComponent(csvExportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(pdfExportButton))
+                                .addComponent(receptionistDetailsExportCSVButton, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(receptionistDetailsExportCSVButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(patientAllDetailsExporCSVButton, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(pnlPieChart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addGap(285, 285, 285)
+                            .addComponent(jLabel13)))
+                    .addContainerGap(16, Short.MAX_VALUE)))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 619, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel5Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(jLabel13)
+                    .addGap(10, 10, 10)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(10, 10, 10)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(csvExportButton)
+                        .addComponent(pdfExportButton)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addGap(7, 7, 7)
+                            .addComponent(jLabel9)))
+                    .addGap(10, 10, 10)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel10)
+                        .addComponent(receptionistDetailsExportCSVButton))
+                    .addGap(10, 10, 10)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addComponent(jLabel12)
+                            .addGap(10, 10, 10)
+                            .addComponent(jLabel11))
+                        .addGroup(jPanel5Layout.createSequentialGroup()
+                            .addComponent(receptionistDetailsExportCSVButton1)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(patientAllDetailsExporCSVButton)))
+                    .addGap(10, 10, 10)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(pnlBarChart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pnlPieChart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void pdfExportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pdfExportButtonActionPerformed
+        // TODO add your handling code here:
+        JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setSelectedFile(new java.io.File("Billing_Treatment_Report.pdf"));
+
+        if (chooser.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+            String filePath = chooser.getSelectedFile().getAbsolutePath();
+
+            JTable reportTable = new JTable(reportDAO.getDetailedBillAndTreatmentReport());
+
+            boolean success = util.ReportExporter.exportTableToPDF(reportTable, filePath, "Sunrise Dental Clinic - Bill & Treatment Report");
+            if (success) {
+                javax.swing.JOptionPane.showMessageDialog(this, "PDF Report exported successfully!");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Failed to export PDF Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_pdfExportButtonActionPerformed
+
+    private void csvExportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_csvExportButtonActionPerformed
+        // TODO add your handling code here:
+        JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setSelectedFile(new java.io.File("Billing_Treatment_Report.csv"));
+
+        if (chooser.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+            String filePath = chooser.getSelectedFile().getAbsolutePath();
+
+            JTable reportTable = new JTable(reportDAO.getDetailedBillAndTreatmentReport());
+
+            boolean success = util.ReportExporter.exportTableToCSV(reportTable, filePath);
+            if (success) {
+                javax.swing.JOptionPane.showMessageDialog(this, "CSV Report exported successfully!");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Failed to export CSV Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_csvExportButtonActionPerformed
+
+    private void receptionistDetailsExportCSVButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receptionistDetailsExportCSVButtonActionPerformed
+        // TODO add your handling code here:
+        DAO.ReportDAO reportDAO = new DAO.ReportDAO();
+        DefaultTableModel model = reportDAO.getReceptionistExportData();
+        util.ReportExporter.exportModelToCSV(model, "Receptionist_Activity_Report");
+    }//GEN-LAST:event_receptionistDetailsExportCSVButtonActionPerformed
+
+    private void patientAllDetailsExporCSVButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patientAllDetailsExporCSVButtonActionPerformed
+        // TODO add your handling code here:
+        DAO.ReportDAO reportDAO = new ReportDAO();
+        DefaultTableModel model = reportDAO.getPatientExportData();
+        util.ReportExporter.exportModelToCSV(model, "Patient_All_Details_Report");
+    }//GEN-LAST:event_patientAllDetailsExporCSVButtonActionPerformed
+
+    private void receptionistDetailsExportCSVButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receptionistDetailsExportCSVButton1ActionPerformed
+        // TODO add your handling code here:
+        DAO.ReportDAO reportDAO = new ReportDAO();
+        DefaultTableModel model = reportDAO.getDentistExportData();
+        util.ReportExporter.exportModelToCSV(model, "Dentist_Activity_Report");
+    }//GEN-LAST:event_receptionistDetailsExportCSVButton1ActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel activeStaffNoLabel;
+    private javax.swing.JButton csvExportButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JButton patientAllDetailsExporCSVButton;
+    private javax.swing.JButton pdfExportButton;
+    private javax.swing.JPanel pnlBarChart;
+    private javax.swing.JPanel pnlPieChart;
+    private javax.swing.JButton receptionistDetailsExportCSVButton;
+    private javax.swing.JButton receptionistDetailsExportCSVButton1;
+    private javax.swing.JLabel todayAppointmentNoLabel;
+    private javax.swing.JLabel totalPatientCountLabel;
+    private javax.swing.JLabel totalRevenueAmountLabel;
+    // End of variables declaration//GEN-END:variables
+}
