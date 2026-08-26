@@ -1,3 +1,7 @@
 target/
 build/
 .nb-gradle/
+
+# Exclude config properties with sensitive credentials
+src/main/resources/config.properties
+config.properties

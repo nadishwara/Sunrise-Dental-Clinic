@@ -102,6 +102,7 @@ public class PatientRequestForm extends javax.swing.JPanel {
         RejectRbtn = new javax.swing.JButton();
         ScheduleAbtn = new javax.swing.JButton();
 
+        setBackground(new java.awt.Color(255, 255, 255));
         setForeground(new java.awt.Color(255, 255, 255));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(

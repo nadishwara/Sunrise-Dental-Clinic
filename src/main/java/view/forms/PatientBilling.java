@@ -350,6 +350,8 @@ public class PatientBilling extends javax.swing.JPanel {
 
         jScrollPane2.setViewportView(jTextPane1);
 
+        setBackground(new java.awt.Color(255, 255, 255));
+
         searchbar1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 searchbar1KeyReleased(evt);

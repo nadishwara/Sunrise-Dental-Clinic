@@ -54,15 +54,21 @@ public class RegisterControllerTest {
 
     @Test
     public void testValidPatientRegistration() {
-        String uniqueEmail = "patient_" + System.currentTimeMillis() + "@gmail.com";
-        String result = controller.registerUser("New Patient", uniqueEmail, "Pass123", "Pass123", "PATIENT", null);
+        long timestamp = System.currentTimeMillis();
+        String uniqueUsername = "Patient_" + timestamp;
+        String uniqueEmail = "patient_" + timestamp + "@gmail.com";
+        
+        String result = controller.registerUser(uniqueUsername, uniqueEmail, "Pass123", "Pass123", "PATIENT", null);
         assertEquals("REGISTRATION_SUCCESS", result);
     }
 
     @Test
     public void testValidDentistRegistration() {
-        String uniqueEmail = "dentist_" + System.currentTimeMillis() + "@gmail.com";
-        String result = controller.registerUser("Dr. Silva", uniqueEmail, "Pass123", "Pass123", "DENTIST", "0771234567");
+        long timestamp = System.currentTimeMillis();
+        String uniqueUsername = "Dentist_" + timestamp;
+        String uniqueEmail = "dentist_" + timestamp + "@gmail.com";
+        
+        String result = controller.registerUser(uniqueUsername, uniqueEmail, "Pass123", "Pass123", "DENTIST", "0771234567");
         assertEquals("REGISTRATION_SUCCESS", result);
     }
 }

@@ -125,11 +125,11 @@ public class AppointmentDAO {
 
     public List<Object[]> getAllAppointmentsForTable() {
         List<Object[]> appointments = new ArrayList<>();
-        String query = "SELECT a.appointment_id, u_pat.username AS patient_name, u_pat.address, "
-                + "u_pat.contact_no, u_pat.whatsapp_no, u_doc.username AS dentist_name, "
+        String query = "SELECT a.appointment_id, p.full_name AS patient_name, p.address, "
+                + "p.phone AS contact_no, p.email, u_doc.username AS dentist_name, "
                 + "a.treatment_type, a.appointment_date, a.appointment_time "
                 + "FROM appointments a "
-                + "JOIN users u_pat ON a.patient_id = u_pat.user_id "
+                + "JOIN patients p ON a.patient_id = p.patient_id "
                 + "JOIN users u_doc ON a.dentist_id = u_doc.user_id "
                 + "ORDER BY a.appointment_id DESC";
 
@@ -141,7 +141,7 @@ public class AppointmentDAO {
                     rs.getString("patient_name"),
                     rs.getString("address"),
                     rs.getString("contact_no"),
-                    rs.getString("whatsapp_no"),
+                    rs.getString("email"),
                     rs.getString("dentist_name"),
                     rs.getString("treatment_type"),
                     rs.getDate("appointment_date"),
@@ -154,85 +154,107 @@ public class AppointmentDAO {
         return appointments;
     }
 
-    public boolean saveDirectBooking(String name, String address, String contact, String whatsapp,
-            int dentistId, String treatment, String formattedDate, String time) {
-        Connection conn = null;
-        try {
-            conn = DBConnection.getInstance().getConnection();
-            conn.setAutoCommit(false);
+    public boolean saveOrUpdateBooking(int appointmentId, String name, String email, String contact, String address,
+                                   int dentistId, String treatment, String formattedDate, String time) {
+    Connection conn = null;
+    try {
+        conn = DBConnection.getInstance().getConnection();
+        conn.setAutoCommit(false);
 
-            int patientUserId = 0;
-            String generatedEmail = name.toLowerCase().replaceAll("\\s+", "") + "@patient.com";
-
-            String checkUserQuery = "SELECT user_id FROM users WHERE username = ? OR contact_no = ? LIMIT 1";
-            PreparedStatement pstCheck = conn.prepareStatement(checkUserQuery);
+        int patientId = 0;
+        String checkPatientQuery = "SELECT patient_id FROM patients WHERE full_name = ? OR phone = ? LIMIT 1";
+        try (PreparedStatement pstCheck = conn.prepareStatement(checkPatientQuery)) {
             pstCheck.setString(1, name);
             pstCheck.setString(2, contact);
-            ResultSet rsCheck = pstCheck.executeQuery();
-
-            if (rsCheck.next()) {
-                patientUserId = rsCheck.getInt("user_id");
-            } else {
-                String customId = "PTN" + (System.currentTimeMillis() % 100000);
-                String userQuery = "INSERT INTO users (custom_id, username, email, contact_no, whatsapp_no, address, password_hash, role, status) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, 'default123', 'PATIENT', 'ACTIVE')";
-
-                PreparedStatement pstUser = conn.prepareStatement(userQuery, Statement.RETURN_GENERATED_KEYS);
-                pstUser.setString(1, customId);
-                pstUser.setString(2, name);
-                pstUser.setString(3, generatedEmail);
-                pstUser.setString(4, contact);
-                pstUser.setString(5, whatsapp);
-                pstUser.setString(6, address);
-                pstUser.executeUpdate();
-
-                ResultSet rsKeys = pstUser.getGeneratedKeys();
-                if (rsKeys.next()) {
-                    patientUserId = rsKeys.getInt(1);
+            try (ResultSet rsCheck = pstCheck.executeQuery()) {
+                if (rsCheck.next()) {
+                    patientId = rsCheck.getInt("patient_id");
                 }
             }
+        }
 
-            if (patientUserId <= 0) {
-                throw new SQLException("Failed to resolve or create a valid patient user_id.");
+        if (patientId == 0) {
+            String patientQuery = "INSERT INTO patients (full_name, email, phone, address) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstPatient = conn.prepareStatement(patientQuery, Statement.RETURN_GENERATED_KEYS)) {
+                pstPatient.setString(1, name);
+                pstPatient.setString(2, email);
+                pstPatient.setString(3, contact);
+                pstPatient.setString(4, address);
+                pstPatient.executeUpdate();
+
+                try (ResultSet rsKeys = pstPatient.getGeneratedKeys()) {
+                    if (rsKeys.next()) {
+                        patientId = rsKeys.getInt(1);
+                    }
+                }
             }
+        } else {
+            String updatePatientQuery = "UPDATE patients SET full_name = ?, email = ?, phone = ?, address = ? WHERE patient_id = ?";
+            try (PreparedStatement pstUpdate = conn.prepareStatement(updatePatientQuery)) {
+                pstUpdate.setString(1, name);
+                pstUpdate.setString(2, email);
+                pstUpdate.setString(3, contact);
+                pstUpdate.setString(4, address);
+                pstUpdate.setInt(5, patientId);
+                pstUpdate.executeUpdate();
+            }
+        }
 
+        if (patientId <= 0) {
+            throw new SQLException("Failed to resolve or create a valid patient.");
+        }
+
+        if (appointmentId > 0) {
+            String updateAppQuery = "UPDATE appointments SET patient_id = ?, dentist_id = ?, appointment_date = ?, appointment_time = ?, treatment_type = ? WHERE appointment_id = ?";
+            try (PreparedStatement pstApp = conn.prepareStatement(updateAppQuery)) {
+                pstApp.setInt(1, patientId);
+                pstApp.setInt(2, dentistId);
+                pstApp.setString(3, formattedDate);
+                pstApp.setString(4, time);
+                pstApp.setString(5, treatment);
+                pstApp.setInt(6, appointmentId);
+                pstApp.executeUpdate();
+            }
+        } else {
             String customAppId = "APT" + (System.currentTimeMillis() % 100000);
             String appQuery = "INSERT INTO appointments (custom_appointment_id, patient_id, dentist_id, receptionist_id, appointment_date, appointment_time, treatment_type, status) "
                     + "VALUES (?, ?, ?, 10, ?, ?, ?, 'SCHEDULED')";
 
-            PreparedStatement pstApp = conn.prepareStatement(appQuery);
-            pstApp.setString(1, customAppId);
-            pstApp.setInt(2, patientUserId);
-            pstApp.setInt(3, dentistId);
-            pstApp.setString(4, formattedDate);
-            pstApp.setString(5, time);
-            pstApp.setString(6, treatment);
-            pstApp.executeUpdate();
-
-            conn.commit();
-            return true;
-
-        } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            try (PreparedStatement pstApp = conn.prepareStatement(appQuery)) {
+                pstApp.setString(1, customAppId);
+                pstApp.setInt(2, patientId);
+                pstApp.setInt(3, dentistId);
+                pstApp.setString(4, formattedDate);
+                pstApp.setString(5, time);
+                pstApp.setString(6, treatment);
+                pstApp.executeUpdate();
             }
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+        }
+
+        conn.commit();
+        return true;
+
+    } catch (Exception e) {
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        e.printStackTrace();
+        return false;
+    } finally {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }
+}
 
     public boolean deleteAppointment(int appointmentId) {
         String sql = "DELETE FROM appointments WHERE appointment_id = ?";
@@ -278,7 +300,7 @@ public class AppointmentDAO {
         }
         return list;
     }
-    
+
     public List<Object[]> getScheduledAppointmentsByDentist(int dentistUserId) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT a.appointment_id, a.patient_id, "
