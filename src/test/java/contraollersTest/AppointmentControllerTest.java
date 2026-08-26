@@ -52,10 +52,11 @@ public class AppointmentControllerTest {
     }
 
     @Test
-    public void testValidBooking() {
-        long timestamp = System.currentTimeMillis();
-        String uniqueContact = "077" + (timestamp % 10000000);
-        String result = controller.bookAppointment(0, "Test Patient", "patient@email.com", uniqueContact, "Negombo", 1, "General Care", "2026-08-30", "08:30 AM - 09:30 AM");
-        assertEquals("BOOKING_SUCCESS", result);
-    }
+public void testValidBooking() {
+    long timestamp = System.currentTimeMillis();
+    String uniqueContact = "077" + (timestamp % 10000000);
+    String uniqueDate = "2026-09-" + String.format("%02d", (timestamp % 25) + 1);
+    String result = controller.bookAppointment(0, "Test Patient", "patient@email.com", uniqueContact, "Negombo", 1, "General Care", uniqueDate, "08:30 AM - 09:30 AM");
+    assertEquals("BOOKING_SUCCESS", result);
+}
 }

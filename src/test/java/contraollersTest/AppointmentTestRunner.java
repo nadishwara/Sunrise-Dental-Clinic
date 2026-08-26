@@ -1,16 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package contraollersTest;
 
 import controller.AppointmentController;
 
-/**
- *
- * @author nadis
- */
 public class AppointmentTestRunner {
+
     static int totalTests = 0;
     static int passedTests = 0;
 
@@ -29,8 +22,12 @@ public class AppointmentTestRunner {
         runTest("Empty Date Check", controller.bookAppointment(0, "John Doe", "test@email.com", "0771234567", "Negombo", 1, "General Care", "", "08:30 AM - 09:30 AM"), "Date is required");
         runTest("Empty Time Slot Check", controller.bookAppointment(0, "John Doe", "test@email.com", "0771234567", "Negombo", 1, "General Care", "2026-08-30", ""), "Time slot is required");
 
-        String uniqueContact = "077" + (System.currentTimeMillis() % 10000000);
-        runTest("Valid Appointment Booking Flow", controller.bookAppointment(0, "Test Patient", "patient@email.com", uniqueContact, "Negombo", 1, "General Care", "2026-08-30", "08:30 AM - 09:30 AM"), "BOOKING_SUCCESS");
+        // Dynamic date & contact generation to avoid DB unique constraint conflicts
+        long timestamp = System.currentTimeMillis();
+        String uniqueContact = "077" + (timestamp % 10000000);
+        String uniqueDate = "2026-09-" + String.format("%02d", (timestamp % 25) + 1);
+
+        runTest("Valid Appointment Booking Flow", controller.bookAppointment(0, "Test Patient", "patient@email.com", uniqueContact, "Negombo", 1, "General Care", uniqueDate, "08:30 AM - 09:30 AM"), "BOOKING_SUCCESS");
 
         System.out.println("\n======================================");
         System.out.println("              SUMMARY                 ");
