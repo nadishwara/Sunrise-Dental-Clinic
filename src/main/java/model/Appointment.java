@@ -114,7 +114,7 @@ public class Appointment {
     public void setTreatmentType(String treatmentType) {
         this.treatmentType = treatmentType;
     }
-
+ 
     public Date getAppointmentDate() {
         return appointmentDate;
     }

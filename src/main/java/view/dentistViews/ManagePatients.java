@@ -20,9 +20,9 @@ public class ManagePatients extends javax.swing.JPanel {
      */
     private int loggedInDentistId;
     private AppointmentDAO appointmentDAO;
-    
-    
+
     public interface TreatmentSaveListener {
+
         void onTreatmentSaved();
     }
 
@@ -65,8 +65,6 @@ public class ManagePatients extends javax.swing.JPanel {
         jTable1.getColumnModel().getColumn(1).setMaxWidth(0);
         jTable1.getColumnModel().getColumn(1).setWidth(0);
     }
-    
-    
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -191,10 +189,10 @@ public class ManagePatients extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         int appId = Integer.parseInt(model.getValueAt(modelRow, 0).toString());
-        int patientId = Integer.parseInt(model.getValueAt(selectedRow, 1).toString());
-        String patientName = model.getValueAt(selectedRow, 2).toString();
-        String treatment = model.getValueAt(selectedRow, 3).toString();
-        String appDate = model.getValueAt(selectedRow, 4).toString();
+        int patientId = Integer.parseInt(model.getValueAt(modelRow, 1).toString());
+        String patientName = model.getValueAt(modelRow, 2).toString();
+        String treatment = model.getValueAt(modelRow, 3).toString();
+        String appDate = model.getValueAt(modelRow, 4).toString();
 
         String dentistName = "Dr. Dentist";
 
@@ -207,12 +205,23 @@ public class ManagePatients extends javax.swing.JPanel {
                 dentistName,
                 appDate
         );
+
+        // =========================================================
+        // ADD THIS LISTENER TO REFRESH TABLE ON SAVE
+        // =========================================================
+        treatmentFrame.setTreatmentSaveListener(new TreatmentSaveListener() {
+            @Override
+            public void onTreatmentSaved() {
+                loadScheduledAppointments();
+            }
+        });
+
         treatmentFrame.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // TODO add your handling code here:
-int selectedRow = jTable1.getSelectedRow();
+        int selectedRow = jTable1.getSelectedRow();
 
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(

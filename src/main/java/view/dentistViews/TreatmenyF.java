@@ -40,9 +40,8 @@ public class TreatmenyF extends javax.swing.JFrame {
         initComponents();
         makeFrameRounded(30, 30);
         enableWindowDragging();
+        setupComboBoxListeners();
     }
-    
-    
 
     public TreatmenyF(int appointmentId, int patientUserId, String patientName, String treatmentType, int dentistUserId) {
         this(appointmentId, patientUserId, patientName, treatmentType, dentistUserId, null, null);
@@ -58,6 +57,7 @@ public class TreatmenyF extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         makeFrameRounded(30, 30);
         enableWindowDragging();
+        setupComboBoxListeners();
 
         patientNamelabel.setText(patientName != null ? patientName : "N/A");
 
@@ -70,13 +70,25 @@ public class TreatmenyF extends javax.swing.JFrame {
         if (appointmentDate != null && !appointmentDate.trim().isEmpty()) {
             datelabel.setText(appointmentDate);
         } else {
-            datelabel.setText(java.time.LocalDate.now().toString());
+            datelabel.setText(LocalDate.now().toString());
         }
 
         if (treatmentType != null && !treatmentType.trim().isEmpty()) {
             treatmentComboBox.setSelectedItem(treatmentType);
         }
         loadExistingTreatmentData();
+    }
+
+    private void setupComboBoxListeners() {
+        toothNoComboBox.addActionListener(e -> {
+            String selected = (String) toothNoComboBox.getSelectedItem();
+            if (selected != null && !selected.startsWith("--")) {
+                String toothNum = selected.contains(" - ") ? selected.split(" - ")[0].trim() : selected.trim();
+                selecttoothNolabel1.setText(toothNum);
+            } else {
+                selecttoothNolabel1.setText("No");
+            }
+        });
     }
 
     private void setSelectedToothInComboBox(String toothNoStr) {
@@ -86,7 +98,7 @@ public class TreatmenyF extends javax.swing.JFrame {
         String cleanTooth = toothNoStr.trim();
         for (int i = 0; i < toothNoComboBox.getItemCount(); i++) {
             String item = toothNoComboBox.getItemAt(i);
-            if (item != null && (item.startsWith(toothNoStr + " ") || item.equals(toothNoStr))) {
+            if (item != null && (item.startsWith(cleanTooth + " ") || item.equals(cleanTooth))) {
                 toothNoComboBox.setSelectedIndex(i);
                 break;
             }
@@ -94,11 +106,9 @@ public class TreatmenyF extends javax.swing.JFrame {
     }
 
     private void loadExistingTreatmentData() {
-        System.out.println("Fetching record for Appointment ID: " + this.appointmentId);
         try {
             TreatmentDAO dao = new TreatmentDAO();
             Map<String, Object> record = dao.getTreatmentByAppointmentId(this.appointmentId);
-            System.out.println("Retrieved Record: " + record);
 
             if (record != null && !record.isEmpty()) {
                 if (record.get("treatmentName") != null) {
@@ -664,10 +674,13 @@ public class TreatmenyF extends javax.swing.JFrame {
     private void saveTreatmentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveTreatmentButtonActionPerformed
         // TODO add your handling code here:
         try {
+            if (medicationRecordTable.isEditing()) {
+                medicationRecordTable.getCellEditor().stopCellEditing();
+            }
+
             String treatmentName = treatmentComboBox.getSelectedItem() != null ? treatmentComboBox.getSelectedItem().toString() : "";
             String selectedToothItem = toothNoComboBox.getSelectedItem() != null ? toothNoComboBox.getSelectedItem().toString() : "";
 
-            // Validation: Ensure a valid tooth or item header isn't just left blank/default improperly
             if (selectedToothItem.startsWith("--") || treatmentName.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please select a valid treatment name and tooth number.", "Validation Error", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -694,17 +707,18 @@ public class TreatmenyF extends javax.swing.JFrame {
             DefaultTableModel model = (DefaultTableModel) medicationRecordTable.getModel();
             List<Object[]> prescriptionsList = new ArrayList<>();
             for (int i = 0; i < model.getRowCount(); i++) {
-                if (model.getValueAt(i, 0) != null && !model.getValueAt(i, 0).toString().trim().isEmpty()) {
+                Object medObj = model.getValueAt(i, 0);
+                if (medObj != null && !medObj.toString().trim().isEmpty()) {
                     prescriptionsList.add(new Object[]{
-                        model.getValueAt(i, 0).toString(),
-                        model.getValueAt(i, 1) != null ? model.getValueAt(i, 1).toString() : "",
-                        model.getValueAt(i, 2) != null ? model.getValueAt(i, 2).toString() : "",
-                        model.getValueAt(i, 3) != null ? model.getValueAt(i, 3).toString() : ""
+                        medObj.toString().trim(),
+                        model.getValueAt(i, 1) != null ? model.getValueAt(i, 1).toString().trim() : "",
+                        model.getValueAt(i, 2) != null ? model.getValueAt(i, 2).toString().trim() : "",
+                        model.getValueAt(i, 3) != null ? model.getValueAt(i, 3).toString().trim() : ""
                     });
                 }
             }
 
-            String xrayFilePath = "";
+            String xrayFilePath = fileSelectTextField.getText() != null ? fileSelectTextField.getText().trim() : "";
             if (selectedXRayFile != null && selectedXRayFile.exists()) {
                 File destDir = new File("uploads/xrays");
                 if (!destDir.exists()) {
@@ -778,16 +792,13 @@ public class TreatmenyF extends javax.swing.JFrame {
     private void locationBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationBrowserButtonActionPerformed
         // TODO add your handling code here:
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select Dental X-Ray Image");
-
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files (*.jpg, *.png, *.jpeg)", "jpg", "jpeg", "png");
-        fileChooser.setFileFilter(filter);
+        fileChooser.setDialogTitle("Select X-Ray Image");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files (*.jpg, *.png, *.jpeg)", "jpg", "jpeg", "png"));
 
         int userSelection = fileChooser.showOpenDialog(this);
-
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             selectedXRayFile = fileChooser.getSelectedFile();
-            locationBrowserButton.setText(selectedXRayFile.getAbsolutePath());
+            fileSelectTextField.setText(selectedXRayFile.getAbsolutePath());
         }
     }//GEN-LAST:event_locationBrowserButtonActionPerformed
 

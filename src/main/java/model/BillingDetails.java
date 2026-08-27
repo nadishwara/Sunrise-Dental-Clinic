@@ -34,6 +34,9 @@ public class BillingDetails {
     private double discount;
     private double netAmount;
     private String paymentStatus;
+    
+    private String appointmentStatus;
+    private String customBillId;
 
     public BillingDetails() {}
 
@@ -93,4 +96,13 @@ public class BillingDetails {
 
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    
+    public String getAppointmentStatus() {return appointmentStatus;}
+    public void setAppointmentStatus(String appointmentStatus) {this.appointmentStatus = appointmentStatus;}
+    
+    public String getCustomBillId() { 
+        return customBillId; 
+    }
+    
+    public void setCustomBillId(String customBillId) {this.customBillId = customBillId;}
 }

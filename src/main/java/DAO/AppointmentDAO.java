@@ -302,36 +302,37 @@ public class AppointmentDAO {
     }
 
     public List<Object[]> getScheduledAppointmentsByDentist(int dentistUserId) {
-        List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT a.appointment_id, a.patient_id, "
-                + "COALESCE(u.username, CONCAT('Unknown (ID:', a.patient_id, ')')) AS patient_name, "
-                + "COALESCE(a.treatment_type, 'General Examination') AS treatment_type, "
-                + "a.appointment_date, a.appointment_time "
-                + "FROM appointments a "
-                + "LEFT JOIN users u ON a.patient_id = u.user_id "
-                + "WHERE a.dentist_id = ? AND a.status IN ('SCHEDULED', 'COMPLETED', 'ACCEPTED') "
-                + "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+    List<Object[]> list = new ArrayList<>();
+    String sql = "SELECT a.appointment_id, a.patient_id, "
+            + "COALESCE(p.full_name, u.username, CONCAT('Unknown (ID:', a.patient_id, ')')) AS patient_name, "
+            + "COALESCE(a.treatment_type, 'General Examination') AS treatment_type, "
+            + "a.appointment_date, a.appointment_time "
+            + "FROM appointments a "
+            + "LEFT JOIN patients p ON a.patient_id = p.patient_id "
+            + "LEFT JOIN users u ON a.patient_id = u.user_id "
+            + "WHERE a.dentist_id = ? AND a.status IN ('SCHEDULED', 'COMPLETED', 'ACCEPTED') "
+            + "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, dentistUserId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new Object[]{
-                        rs.getInt("appointment_id"),
-                        rs.getInt("patient_id"),
-                        rs.getString("patient_name"),
-                        rs.getString("treatment_type"),
-                        rs.getDate("appointment_date") != null ? rs.getDate("appointment_date").toString() : "",
-                        rs.getString("appointment_time")
-                    });
-                }
+        ps.setInt(1, dentistUserId);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new Object[]{
+                    rs.getInt("appointment_id"),
+                    rs.getInt("patient_id"),
+                    rs.getString("patient_name"),
+                    rs.getString("treatment_type"),
+                    rs.getDate("appointment_date") != null ? rs.getDate("appointment_date").toString() : "",
+                    rs.getString("appointment_time")
+                });
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return list;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+    return list;
+}
 
     private String formatTimeSlot(String rawTime) {
         if (rawTime == null || rawTime.trim().isEmpty()) {

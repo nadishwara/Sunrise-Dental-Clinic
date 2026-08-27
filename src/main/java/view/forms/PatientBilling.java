@@ -5,20 +5,10 @@
 package view.forms;
 
 import DAO.BillingDAO;
-import java.awt.BorderLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.DefaultListModel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import model.BillingDetails;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Desktop;
 import java.io.File;
@@ -63,6 +53,7 @@ public class PatientBilling extends javax.swing.JPanel {
 
         searchbar1.attachToTable(jTable1);
         searchbar1.getSearchTextField().addActionListener(e -> performSearch());
+        System.out.println("Total rows loaded in JTable: " + model.getRowCount());
     }
 
     private void addTableSelectionListener() {
@@ -154,8 +145,15 @@ public class PatientBilling extends javax.swing.JPanel {
             xrayBuilder.append(x).append("\n");
         }
 
+        StringBuilder prescriptionBuilder = new StringBuilder();
+        for (String p : currentBillingDetails.getPrescriptions()) {
+            prescriptionBuilder.append(p).append("\n");
+        }
+
         txtTreatments.setText(treatmentBuilder.toString());
         txtXrays.setText(xrayBuilder.toString());
+        clinicNoteTextArea.setText(currentBillingDetails.getClinicalNotes() != null ? currentBillingDetails.getClinicalNotes() : "");
+        prescriptionLabel.setText("<html>" + prescriptionBuilder.toString().replaceAll("\n", "<br/>") + "</html>");
     }
 
     private void addCalculationListeners() {
@@ -209,6 +207,19 @@ public class PatientBilling extends javax.swing.JPanel {
         }
     }
 
+    public PatientBilling(int appointmentId) {
+        this();
+        displayBillForAppointment(appointmentId);
+    }
+
+    /**
+     * Public method to load and display bill details dynamically.
+     */
+    public void displayBillForAppointment(int appointmentId) {
+        loadBillingDetailsById(appointmentId);
+        jScrollPane3.getVerticalScrollBar().setValue(0);
+    }
+
     private void saveAndGenerateBill() {
         if (currentBillingDetails == null) {
             JOptionPane.showMessageDialog(this, "Please search for a patient or appointment first.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -232,9 +243,10 @@ public class PatientBilling extends javax.swing.JPanel {
         );
 
         if (isSuccess) {
-            JOptionPane.showMessageDialog(this, "Bill saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            clearFields();
+            JOptionPane.showMessageDialog(this, "Bill generated and saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadTableData();
+            // Automatically reload and display the generated bill details on screen
+            displayBillForAppointment(appointmentId);
         } else {
             JOptionPane.showMessageDialog(this, "Failed to save the bill.", "Database Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -260,6 +272,27 @@ public class PatientBilling extends javax.swing.JPanel {
         txtXrays.setText("");
         clinicNoteTextArea.setText("");
         jTable1.clearSelection();
+    }
+
+    private String getPatientEmailByAppointmentId(int appointmentId) {
+        String email = null;
+        String sql = "SELECT COALESCE(p.email, u.email) AS email "
+                + "FROM appointments a "
+                + "LEFT JOIN patients p ON a.patient_id = p.patient_id "
+                + "LEFT JOIN users u ON a.patient_id = u.user_id "
+                + "WHERE a.appointment_id = ?";
+
+        try (java.sql.Connection conn = config.DBConnection.getInstance().getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, appointmentId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    email = rs.getString("email");
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return email;
     }
 
     /**
@@ -347,6 +380,7 @@ public class PatientBilling extends javax.swing.JPanel {
         jTable1 = new javax.swing.JTable();
         saveUpdateBillButton = new javax.swing.JButton();
         printBillButton1 = new javax.swing.JButton();
+        mailButton = new javax.swing.JButton();
 
         jScrollPane2.setViewportView(jTextPane1);
 
@@ -885,7 +919,7 @@ public class PatientBilling extends javax.swing.JPanel {
 
             },
             new String [] {
-                "Appt ID", "Appt Custom ID", "Patient Name", "Patient Custom ID", "Date"
+                "Appt ID", "Appt Custom ID", "Patient Name", "Patient Custom ID", "Date", "Status"
             }
         ));
         jScrollPane4.setViewportView(jTable1);
@@ -910,6 +944,17 @@ public class PatientBilling extends javax.swing.JPanel {
             }
         });
 
+        mailButton.setBackground(new java.awt.Color(153, 51, 0));
+        mailButton.setFont(new java.awt.Font("Segoe UI Historic", 1, 18)); // NOI18N
+        mailButton.setForeground(new java.awt.Color(255, 255, 255));
+        mailButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/email.png"))); // NOI18N
+        mailButton.setText("Mail Bill");
+        mailButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mailButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -930,7 +975,9 @@ public class PatientBilling extends javax.swing.JPanel {
                                         .addComponent(roundedPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel3Layout.createSequentialGroup()
                                         .addGap(49, 49, 49)
-                                        .addComponent(saveUpdateBillButton)
+                                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(mailButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(saveUpdateBillButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addGap(27, 27, 27)
                                         .addComponent(printBillButton1)))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -954,7 +1001,9 @@ public class PatientBilling extends javax.swing.JPanel {
                                 .addGap(36, 36, 36)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(saveUpdateBillButton)
-                                    .addComponent(printBillButton1)))
+                                    .addComponent(printBillButton1))
+                                .addGap(10, 10, 10)
+                                .addComponent(mailButton))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(roundedPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1002,35 +1051,27 @@ public class PatientBilling extends javax.swing.JPanel {
 
     private void saveUpdateBillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveUpdateBillButtonActionPerformed
         // TODO add your handling code here:
-        System.out.println("--- DEBUG: Update Bill Button Clicked ---");
-
         if (currentBillingDetails == null) {
-            System.out.println("DEBUG: currentBillingDetails is NULL!");
             JOptionPane.showMessageDialog(this, "Please select or search for an appointment first.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int appointmentId = currentBillingDetails.getAppointmentId();
-        System.out.println("DEBUG: Selected Appointment ID: " + appointmentId);
+
+        int receptionistUserId = currentLoggedInReceptionistId;
 
         double consultationFee = parseDouble(txtConsultationFee.getText());
         double otherCharges = parseDouble(txtOtherCharges.getText());
         double discount = parseDouble(txtDiscount.getText());
 
-        System.out.println("DEBUG: Consultation Fee: " + consultationFee);
-        System.out.println("DEBUG: Other Charges: " + otherCharges);
-        System.out.println("DEBUG: Discount: " + discount);
-
-        boolean isSuccess = billingDAO.updateBill(appointmentId, consultationFee, otherCharges, discount);
+        boolean isSuccess = billingDAO.updateBill(appointmentId, receptionistUserId, consultationFee, otherCharges, discount);
 
         if (isSuccess) {
-            System.out.println("DEBUG: Bill updated successfully in Database.");
             JOptionPane.showMessageDialog(this, "Bill updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadTableData();
-            clearFields();
+            displayBillForAppointment(appointmentId);
         } else {
-            System.out.println("DEBUG: Failed to update bill in Database.");
-            JOptionPane.showMessageDialog(this, "Failed to update the bill. Make sure a bill exists for this appointment.", "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to update the bill.", "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_saveUpdateBillButtonActionPerformed
 
@@ -1115,6 +1156,77 @@ public class PatientBilling extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
+    private void mailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mailButtonActionPerformed
+        // TODO add your handling code here:
+        try {
+            int selectedRow = jTable1.getSelectedRow();
+
+            if (selectedRow == -1) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Please select an appointment/bill from the table first!", "Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int appointmentId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
+
+            BillingDAO billingDAO = new BillingDAO();
+            BillingDetails details = billingDAO.getBillingDetailsByAppointmentId(appointmentId);
+
+            if (details == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Bill details not found!", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String defaultEmail = getPatientEmailByAppointmentId(appointmentId);
+            if (defaultEmail == null || defaultEmail.equals("N/A")) {
+                defaultEmail = "";
+            }
+            String patientEmail = (String) javax.swing.JOptionPane.showInputDialog(
+                    this,
+                    "Confirm or enter the patient's email address for Bill ID: " + details.getCustomBillId(),
+                    "Send Bill via Email",
+                    javax.swing.JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    null,
+                    defaultEmail
+            );
+            if (patientEmail == null) {
+                return;
+            }
+
+            patientEmail = patientEmail.trim();
+            if (patientEmail.isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Email address cannot be empty!", "Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            boolean emailSent = util.EmailSender.sendBillEmail(
+                    patientEmail,
+                    details.getPatientName(),
+                    details.getCustomBillId(),
+                    details.getCustomAppointmentId(),
+                    details.getAppointmentDate(),
+                    details.getDoctorName(),
+                    details.getConsultationFee(),
+                    details.getTotalTreatmentCost(),
+                    details.getTotalXrayCost(),
+                    details.getOtherCharges(),
+                    details.getDiscount(),
+                    details.getNetAmount(),
+                    details.getPaymentStatus(),
+                    details.getTreatments()
+            );
+
+            if (emailSent) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Bill successfully emailed to " + patientEmail, "Success", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Failed to send email. Check console for details.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Invalid Appointment ID format.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_mailButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel appintmentIDLable;
@@ -1173,6 +1285,7 @@ public class PatientBilling extends javax.swing.JPanel {
     private javax.swing.JTable jTable1;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JLabel lblNetAmount;
+    private javax.swing.JButton mailButton;
     private javax.swing.JLabel patintAge;
     private javax.swing.JLabel patintContact;
     private javax.swing.JLabel patintId;
