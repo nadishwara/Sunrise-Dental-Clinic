@@ -205,10 +205,6 @@ public class ManagePatients extends javax.swing.JPanel {
                 dentistName,
                 appDate
         );
-
-        // =========================================================
-        // ADD THIS LISTENER TO REFRESH TABLE ON SAVE
-        // =========================================================
         treatmentFrame.setTreatmentSaveListener(new TreatmentSaveListener() {
             @Override
             public void onTreatmentSaved() {

@@ -88,12 +88,12 @@ public class BillingDAO {
         List<Object[]> tableData = new ArrayList<>();
 
         String sql = "SELECT a.appointment_id, a.custom_appointment_id, "
-                + "COALESCE(u.username, p.full_name, 'Manual Patient') AS patient_name, "
-                + "COALESCE(u.custom_id, CONCAT('PTN-', LPAD(p.patient_id, 3, '0'))) AS patient_custom_id, "
+                + "COALESCE(p.full_name, u.username, 'Manual Patient') AS patient_name, "
+                + "COALESCE(CONCAT('PTN-', LPAD(p.patient_id, 3, '0')), u.custom_id) AS patient_custom_id, "
                 + "a.appointment_date, a.status "
                 + "FROM appointments a "
-                + "LEFT JOIN users u ON a.patient_id = u.user_id "
                 + "LEFT JOIN patients p ON a.patient_id = p.patient_id "
+                + "LEFT JOIN users u ON a.patient_id = u.user_id "
                 + "LEFT JOIN billing b ON a.appointment_id = b.appointment_id "
                 + "WHERE (a.status = 'SCHEDULED' OR a.status = 'COMPLETED') "
                 + "AND b.bill_id IS NULL "
@@ -150,17 +150,16 @@ public class BillingDAO {
         System.out.println("DAO DEBUG [getBillingDetailsByAppointmentId]: Fetching for Appt ID=" + appointmentId);
         BillingDetails details = null;
 
-        // Updated with LEFT JOIN patients to retrieve manual patient information accurately
         String sql = "SELECT a.appointment_id, a.custom_appointment_id, a.appointment_date, a.status AS appointment_status, "
-                + "COALESCE(u_pat.user_id, p.patient_id) AS patient_user_id, "
-                + "COALESCE(u_pat.custom_id, CONCAT('PTN-', LPAD(p.patient_id, 3, '0'))) AS patient_custom_id, "
-                + "COALESCE(u_pat.username, p.full_name, 'Manual Patient') AS patient_name, "
-                + "COALESCE(u_pat.contact_no, p.phone, 'N/A') AS contact_no, "
+                + "COALESCE(p.patient_id, u_pat.user_id) AS patient_user_id, "
+                + "COALESCE(CONCAT('PTN-', LPAD(p.patient_id, 3, '0')), u_pat.custom_id) AS patient_custom_id, "
+                + "COALESCE(p.full_name, u_pat.username, 'Manual Patient') AS patient_name, "
+                + "COALESCE(p.phone, u_pat.contact_no, 'N/A') AS contact_no, "
                 + "COALESCE(u_doc.username, 'Not Assigned') AS doctor_name, "
                 + "b.consultation_fee, b.other_charges, b.discount, b.net_amount, b.custom_bill_id, b.payment_status "
                 + "FROM appointments a "
-                + "LEFT JOIN users u_pat ON a.patient_id = u_pat.user_id "
                 + "LEFT JOIN patients p ON a.patient_id = p.patient_id "
+                + "LEFT JOIN users u_pat ON a.patient_id = u_pat.user_id "
                 + "LEFT JOIN users u_doc ON a.dentist_id = u_doc.user_id "
                 + "LEFT JOIN billing b ON a.appointment_id = b.appointment_id "
                 + "WHERE a.appointment_id = ?";
@@ -207,27 +206,28 @@ public class BillingDAO {
         BillingDetails details = null;
 
         String sql = "SELECT a.appointment_id, a.custom_appointment_id, a.appointment_date, "
-                + "COALESCE(u_pat.user_id, p.patient_id) AS patient_user_id, "
-                + "COALESCE(u_pat.custom_id, CONCAT('PTN-', LPAD(p.patient_id, 3, '0'))) AS patient_custom_id, "
-                + "COALESCE(u_pat.username, p.full_name, 'Manual Patient') AS patient_name, "
-                + "COALESCE(u_pat.contact_no, p.phone, 'N/A') AS contact_no, "
+                + "COALESCE(p.patient_id, u_pat.user_id) AS patient_user_id, "
+                + "COALESCE(CONCAT('PTN-', LPAD(p.patient_id, 3, '0')), u_pat.custom_id) AS patient_custom_id, "
+                + "COALESCE(p.full_name, u_pat.username, 'Manual Patient') AS patient_name, "
+                + "COALESCE(p.phone, u_pat.contact_no, 'N/A') AS contact_no, "
                 + "COALESCE(u_doc.username, 'Not Assigned') AS doctor_name, "
                 + "b.consultation_fee, b.other_charges, b.discount, b.net_amount, b.custom_bill_id, b.payment_status "
                 + "FROM appointments a "
-                + "LEFT JOIN users u_pat ON a.patient_id = u_pat.user_id "
                 + "LEFT JOIN patients p ON a.patient_id = p.patient_id "
+                + "LEFT JOIN users u_pat ON a.patient_id = u_pat.user_id "
                 + "LEFT JOIN users u_doc ON a.dentist_id = u_doc.user_id "
                 + "LEFT JOIN billing b ON a.appointment_id = b.appointment_id "
-                + "WHERE (a.custom_appointment_id = ? OR u_pat.custom_id = ? OR u_pat.username LIKE ? OR p.full_name LIKE ?) "
+                + "WHERE (a.custom_appointment_id = ? OR p.full_name LIKE ? OR u_pat.username LIKE ? OR CONCAT('PTN-', LPAD(p.patient_id, 3, '0')) = ? OR u_pat.custom_id = ?) "
                 + "AND a.status IN ('SCHEDULED', 'COMPLETED') "
                 + "ORDER BY a.appointment_id DESC LIMIT 1";
 
         try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, query);
-            ps.setString(2, query);
+            ps.setString(2, "%" + query + "%");
             ps.setString(3, "%" + query + "%");
-            ps.setString(4, "%" + query + "%");
+            ps.setString(4, query);
+            ps.setString(5, query);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

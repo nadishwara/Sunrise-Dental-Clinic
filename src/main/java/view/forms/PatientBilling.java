@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -43,15 +44,18 @@ public class PatientBilling extends javax.swing.JPanel {
     }
 
     private void loadTableData() {
-        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) jTable1.getModel();
+        DefaultTableModel model = (javax.swing.table.DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
 
         java.util.List<Object[]> rows = billingDAO.getAllPendingAppointmentsForTable();
         for (Object[] row : rows) {
             model.addRow(row);
         }
-
+        
         searchbar1.attachToTable(jTable1);
+        for (java.awt.event.ActionListener al : searchbar1.getSearchTextField().getActionListeners()) {
+            searchbar1.getSearchTextField().removeActionListener(al);
+        }
         searchbar1.getSearchTextField().addActionListener(e -> performSearch());
         System.out.println("Total rows loaded in JTable: " + model.getRowCount());
     }
@@ -245,7 +249,6 @@ public class PatientBilling extends javax.swing.JPanel {
         if (isSuccess) {
             JOptionPane.showMessageDialog(this, "Bill generated and saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadTableData();
-            // Automatically reload and display the generated bill details on screen
             displayBillForAppointment(appointmentId);
         } else {
             JOptionPane.showMessageDialog(this, "Failed to save the bill.", "Database Error", JOptionPane.ERROR_MESSAGE);
