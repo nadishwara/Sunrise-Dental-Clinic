@@ -51,12 +51,8 @@ public class PatientBilling extends javax.swing.JPanel {
         for (Object[] row : rows) {
             model.addRow(row);
         }
-        
         searchbar1.attachToTable(jTable1);
-        for (java.awt.event.ActionListener al : searchbar1.getSearchTextField().getActionListeners()) {
-            searchbar1.getSearchTextField().removeActionListener(al);
-        }
-        searchbar1.getSearchTextField().addActionListener(e -> performSearch());
+        
         System.out.println("Total rows loaded in JTable: " + model.getRowCount());
     }
 
