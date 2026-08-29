@@ -11,6 +11,9 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import javax.swing.JFileChooser;
@@ -35,7 +38,7 @@ public class PatientBilling extends javax.swing.JPanel {
         addTableSelectionListener();
 
         jScrollPane3.setViewportView(jPanel3);
-        jPanel3.setPreferredSize(new java.awt.Dimension(1420, 1600));
+        jPanel3.setPreferredSize(new Dimension(1420, 1600));
         jScrollPane3.getVerticalScrollBar().setUnitIncrement(25);
 
         jPanel3.revalidate();
@@ -44,7 +47,7 @@ public class PatientBilling extends javax.swing.JPanel {
     }
 
     private void loadTableData() {
-        DefaultTableModel model = (javax.swing.table.DefaultTableModel) jTable1.getModel();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
 
         java.util.List<Object[]> rows = billingDAO.getAllPendingAppointmentsForTable();
@@ -57,9 +60,9 @@ public class PatientBilling extends javax.swing.JPanel {
     }
 
     private void addTableSelectionListener() {
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTable1.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(MouseEvent evt) {
                 int selectedRow = jTable1.getSelectedRow();
                 if (selectedRow != -1) {
                     int modelRow = jTable1.convertRowIndexToModel(selectedRow);
@@ -1052,26 +1055,42 @@ public class PatientBilling extends javax.swing.JPanel {
 
     private void saveUpdateBillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveUpdateBillButtonActionPerformed
         // TODO add your handling code here:
+        System.out.println("UI DEBUG: saveUpdateBillButtonActionPerformed called.");
+        
         if (currentBillingDetails == null) {
+            System.err.println("UI ERROR: currentBillingDetails is NULL!");
             JOptionPane.showMessageDialog(this, "Please select or search for an appointment first.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int appointmentId = currentBillingDetails.getAppointmentId();
+        System.out.println("UI DEBUG: Active appointmentId to update = " + appointmentId);
 
         int receptionistUserId = currentLoggedInReceptionistId;
 
         double consultationFee = parseDouble(txtConsultationFee.getText());
         double otherCharges = parseDouble(txtOtherCharges.getText());
         double discount = parseDouble(txtDiscount.getText());
+        
+        System.out.println("UI DEBUG: Fees parsed -> Consultation: " + consultationFee + ", Other: " + otherCharges + ", Discount: " + discount);
 
         boolean isSuccess = billingDAO.updateBill(appointmentId, receptionistUserId, consultationFee, otherCharges, discount);
 
+        System.out.println("UI DEBUG: updateBill DAO result = " + isSuccess);
+
         if (isSuccess) {
             JOptionPane.showMessageDialog(this, "Bill updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            
+            jTable1.clearSelection();
+            
+            System.out.println("UI DEBUG: Reloading table data...");
             loadTableData();
+            
+            System.out.println("UI DEBUG: Re-displaying bill for appointmentId = " + appointmentId);
             displayBillForAppointment(appointmentId);
+            
         } else {
+            System.err.println("UI ERROR: Failed to update the bill in database.");
             JOptionPane.showMessageDialog(this, "Failed to update the bill.", "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_saveUpdateBillButtonActionPerformed

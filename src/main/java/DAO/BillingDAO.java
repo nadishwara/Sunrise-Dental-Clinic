@@ -84,7 +84,7 @@ public class BillingDAO {
     }
 
     public List<Object[]> getAllPendingAppointmentsForTable() {
-        System.out.println("DAO DEBUG [getAllPendingAppointmentsForTable]: Loading appointments without bills...");
+        System.out.println("DAO DEBUG [getAllPendingAppointmentsForTable]: Loading appointments...");
         List<Object[]> tableData = new ArrayList<>();
 
         String sql = "SELECT a.appointment_id, a.custom_appointment_id, "
@@ -96,8 +96,7 @@ public class BillingDAO {
                 + "LEFT JOIN users u ON a.patient_id = u.user_id "
                 + "LEFT JOIN billing b ON a.appointment_id = b.appointment_id "
                 + "WHERE (a.status = 'SCHEDULED' OR a.status = 'COMPLETED') "
-                + "AND b.bill_id IS NULL "
-                + "ORDER BY a.appointment_id DESC";
+                + "ORDER BY a.appointment_id DESC"; 
 
         try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -170,6 +169,8 @@ public class BillingDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    System.out.println("DAO DEBUG: Fetched Name = " + rs.getString("patient_name") + ", Bill ID = " + rs.getString("custom_bill_id"));
+
                     details = new BillingDetails();
                     details.setAppointmentId(rs.getInt("appointment_id"));
                     details.setCustomAppointmentId(rs.getString("custom_appointment_id"));
@@ -329,6 +330,9 @@ public class BillingDAO {
                     if (rs.next()) {
                         billExists = true;
                         patientUserId = rs.getInt("patient_user_id");
+                        System.out.println("DAO DEBUG [updateBill]: Existing bill found. Bill ID = " + rs.getInt("bill_id"));
+                    } else {
+                        System.out.println("DAO DEBUG [updateBill]: No existing bill found for this appointment. Will insert a new one.");
                     }
                 }
             }
