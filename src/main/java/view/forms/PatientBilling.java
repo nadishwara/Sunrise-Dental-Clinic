@@ -103,7 +103,7 @@ public class PatientBilling extends javax.swing.JPanel {
     private void performSearch() {
         String searchText = searchbar1.getSearchTextField().getText().trim();
         if (searchText.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a search term.");
+            loadTableData();
             return;
         }
         currentBillingDetails = billingDAO.getBillingDetailsBySearchQuery(searchText);
@@ -121,7 +121,6 @@ public class PatientBilling extends javax.swing.JPanel {
             txtTreatmentCost.setText(String.format("%.2f", currentBillingDetails.getTotalTreatmentCost()));
             txtXrayCost.setText(String.format("%.2f", currentBillingDetails.getTotalXrayCost()));
 
-            // Populate editable financial fields if a bill already exists
             txtConsultationFee.setText(currentBillingDetails.getConsultationFee() > 0 ? String.format("%.2f", currentBillingDetails.getConsultationFee()) : "");
             txtOtherCharges.setText(currentBillingDetails.getOtherCharges() > 0 ? String.format("%.2f", currentBillingDetails.getOtherCharges()) : "");
             txtDiscount.setText(currentBillingDetails.getDiscount() > 0 ? String.format("%.2f", currentBillingDetails.getDiscount()) : "");
@@ -130,7 +129,7 @@ public class PatientBilling extends javax.swing.JPanel {
 
         } else {
             JOptionPane.showMessageDialog(this, "No details found!", "Not Found", JOptionPane.WARNING_MESSAGE);
-            clearFields();
+            loadTableData();
         }
     }
 
@@ -1031,7 +1030,10 @@ public class PatientBilling extends javax.swing.JPanel {
 
     private void searchbar1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchbar1KeyReleased
         // TODO add your handling code here:
-        if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+        String searchText = searchbar1.getSearchTextField().getText().trim();
+        if (searchText.isEmpty()) {
+            loadTableData();
+        } else if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
             performSearch();
         }
     }//GEN-LAST:event_searchbar1KeyReleased

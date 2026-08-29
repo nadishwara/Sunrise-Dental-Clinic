@@ -37,7 +37,44 @@ public class ManagePatients extends javax.swing.JPanel {
         this.loggedInDentistId = dentistUserId;
         this.appointmentDAO = new AppointmentDAO();
         loadScheduledAppointments();
-        searchbar1.attachToTable(jTable1);
+        
+        searchbar1.getSearchTextField().addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                String searchText = searchbar1.getSearchTextField().getText().trim();
+                if (searchText.isEmpty()) {
+                    loadScheduledAppointments();
+                } else {
+                    filterTable(searchText);
+                }
+            }
+        });
+    }
+    
+    private void filterTable(String query) {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+
+        List<Object[]> appointments = appointmentDAO.getScheduledAppointmentsByDentist(loggedInDentistId);
+
+        if (appointments != null) {
+            for (Object[] row : appointments) {
+                String patientName = row[2] != null ? row[2].toString().toLowerCase() : "";
+                String treatment = row[3] != null ? row[3].toString().toLowerCase() : "";
+                
+                if (patientName.contains(query.toLowerCase()) || treatment.contains(query.toLowerCase())) {
+                    model.addRow(row);
+                }
+            }
+        }
+        
+        jTable1.getColumnModel().getColumn(0).setMinWidth(0);
+        jTable1.getColumnModel().getColumn(0).setMaxWidth(0);
+        jTable1.getColumnModel().getColumn(0).setWidth(0);
+
+        jTable1.getColumnModel().getColumn(1).setMinWidth(0);
+        jTable1.getColumnModel().getColumn(1).setMaxWidth(0);
+        jTable1.getColumnModel().getColumn(1).setWidth(0);
     }
 
     private void loadScheduledAppointments() {
@@ -184,8 +221,13 @@ public class ManagePatients extends javax.swing.JPanel {
             );
             return;
         }
-
+        
         int modelRow = jTable1.convertRowIndexToModel(selectedRow);
+        
+        if (modelRow == -1) {
+            return;
+        }
+
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         int appId = Integer.parseInt(model.getValueAt(modelRow, 0).toString());
@@ -230,6 +272,11 @@ public class ManagePatients extends javax.swing.JPanel {
         }
 
         int modelRow = jTable1.convertRowIndexToModel(selectedRow);
+        
+        if (modelRow == -1) {
+            return;
+        }
+
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         int appId = Integer.parseInt(model.getValueAt(modelRow, 0).toString());
