@@ -20,6 +20,7 @@ public class User {
     private String contact_no;
     private String whatsapp_no;
     private String address;
+    private String profileImage;
 
     public User() {}
     
@@ -79,5 +80,8 @@ public class User {
     
     public String getAddress() {return address;}
     public void setAddress(String address) { this.address=address;}
+    
+    public String getProfileImage() { return profileImage; }
+    public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
     
 }

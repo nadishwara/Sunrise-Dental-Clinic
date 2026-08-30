@@ -193,6 +193,12 @@ public class UserDAO {
                         user.setContactNo(rs.getString("final_contact_no"));
                         user.setWhatsappNo(rs.getString("whatsapp_no"));
                         user.setAddress(rs.getString("address"));
+                        
+                        // --- DEBUG PRINT ---
+                        String dbImg = rs.getString("profile_image");
+                        System.out.println("DEBUG [authenticateUser] - DB Profile Image Path: " + dbImg);
+                        user.setProfileImage(dbImg);
+                        // ------------------
 
                         int staffId = rs.getInt("staff_id");
                         if (!rs.wasNull()) {
@@ -236,6 +242,12 @@ public class UserDAO {
                     user.setContactNo(rs.getString("final_contact_no"));
                     user.setWhatsappNo(rs.getString("whatsapp_no"));
                     user.setAddress(rs.getString("address"));
+                    
+                    // --- DEBUG PRINT ---
+                    String dbImg = rs.getString("profile_image");
+                    System.out.println("DEBUG [getUserById] - DB Profile Image Path: " + dbImg);
+                    user.setProfileImage(dbImg);
+                    // ------------------
                 }
             }
         } catch (SQLException e) {
@@ -244,36 +256,22 @@ public class UserDAO {
         return user;
     }
 
-    public boolean updateUserProfile(int userId, String username, String email, String newPassword) {
-        if (userId <= 0 || username == null || username.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+    public boolean updateUserProfile(User user) {
+        if (user == null || user.getUserId() <= 0) {
             return false;
         }
 
-        // Duplicate Check for update
-        if (isEmailExistsForOtherUser(email, userId)) {
-            System.err.println("Update Profile Error: Email is already used by another account.");
-            return false;
-        }
-
-        boolean hasPasswordUpdate = (newPassword != null && !newPassword.trim().isEmpty());
-
-        String sql = hasPasswordUpdate
-                ? "UPDATE users SET username = ?, email = ?, password_hash = ? WHERE user_id = ?"
-                : "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
+        String sql = "UPDATE users SET username = ?, contact_no = ?, whatsapp_no = ?, address = ?, profile_image = ? WHERE user_id = ?";
 
         try (Connection conn = DBConnection.getInstance().getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, username.trim());
-            stmt.setString(2, email.trim());
-
-            if (hasPasswordUpdate) {
-                String hashedPassword = BCrypt.withDefaults().hashToString(12, newPassword.toCharArray());
-                stmt.setString(3, hashedPassword);
-                stmt.setInt(4, userId);
-            } else {
-                stmt.setInt(3, userId);
-            }
+            stmt.setString(1, user.getUsername() != null ? user.getUsername().trim() : "");
+            stmt.setString(2, user.getContactNo());
+            stmt.setString(3, user.getWhatsappNo());
+            stmt.setString(4, user.getAddress());
+            stmt.setString(5, user.getProfileImage());
+            stmt.setInt(6, user.getUserId());
 
             return stmt.executeUpdate() > 0;
 

@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import model.Model_AppointmentRequest;
@@ -106,5 +107,56 @@ public class AppointmentRequestDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public List<Object[]> getAppointmentsByReceptionistId(int receptionistId) {
+        List<Object[]> list = new java.util.ArrayList<>();
+        String sql = "SELECT custom_appointment_id, appointment_date, appointment_time, treatment_type, status "
+                   + "FROM appointments WHERE receptionist_id = ? OR receptionist_id IN (SELECT staff_id FROM staff WHERE user_id = ?)";
+        
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, receptionistId);
+            ps.setInt(2, receptionistId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        rs.getString("custom_appointment_id"),
+                        rs.getDate("appointment_date"),
+                        rs.getString("appointment_time"),
+                        rs.getString("treatment_type"),
+                        rs.getString("status")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Object[]> getTreatmentsByDentistUserId(int dentistUserId) {
+        List<Object[]> list = new java.util.ArrayList<>();
+        String sql = "SELECT treatment_id, appointment_id, treatment_name, tooth_number, service_cost "
+                   + "FROM treatment_records WHERE dentist_user_id = ?";
+        
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, dentistUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        rs.getInt("treatment_id"),
+                        rs.getInt("appointment_id"),
+                        rs.getString("treatment_name"),
+                        rs.getString("tooth_number"),
+                        rs.getDouble("service_cost")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
