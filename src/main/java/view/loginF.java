@@ -6,6 +6,7 @@ package view;
 
 import DAO.UserDAO;
 import java.awt.geom.RoundRectangle2D;
+import javax.swing.JOptionPane;
 import model.User;
 import util.InputValidator;
 
@@ -206,31 +207,31 @@ public class loginF extends javax.swing.JFrame {
         String password = new String(jPasswordField1.getPassword()).trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                 this, 
                 "Please enter both Email and Password!", 
                 "Validation Error", 
-                javax.swing.JOptionPane.WARNING_MESSAGE
+                JOptionPane.WARNING_MESSAGE
             );
             return;
         }
 
         if (!InputValidator.isValidEmail(email)) {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                 this, 
                 "Please enter a valid email address (e.g., user@example.com)!", 
                 "Validation Error", 
-                javax.swing.JOptionPane.WARNING_MESSAGE
+                JOptionPane.WARNING_MESSAGE
             );
             return;
         }
 
         if (!InputValidator.isValidPassword(password)) {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                 this, 
                 "Password must be at least 6 characters long!", 
                 "Validation Error", 
-                javax.swing.JOptionPane.WARNING_MESSAGE
+                JOptionPane.WARNING_MESSAGE
             );
             return;
         }
@@ -239,11 +240,11 @@ public class loginF extends javax.swing.JFrame {
         User loggedUser = userDAO.authenticateUser(email, password);
 
         if (loggedUser != null) {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                 this, 
                 "Login Successful! Welcome " + loggedUser.getUsername() + " (" + loggedUser.getRole() + ")", 
                 "Success", 
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
+                JOptionPane.INFORMATION_MESSAGE
             );
 
             dashboardF dashboard = new dashboardF(loggedUser);
@@ -251,11 +252,11 @@ public class loginF extends javax.swing.JFrame {
             this.dispose();
 
         } else {
-            javax.swing.JOptionPane.showMessageDialog(
+            JOptionPane.showMessageDialog(
                 this, 
                 "Invalid Email or Password!", 
                 "Login Failed", 
-                javax.swing.JOptionPane.ERROR_MESSAGE
+                JOptionPane.ERROR_MESSAGE
             );
         }
     }//GEN-LAST:event_jButton1ActionPerformed

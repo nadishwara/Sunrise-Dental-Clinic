@@ -194,11 +194,9 @@ public class UserDAO {
                         user.setWhatsappNo(rs.getString("whatsapp_no"));
                         user.setAddress(rs.getString("address"));
                         
-                        // --- DEBUG PRINT ---
                         String dbImg = rs.getString("profile_image");
                         System.out.println("DEBUG [authenticateUser] - DB Profile Image Path: " + dbImg);
                         user.setProfileImage(dbImg);
-                        // ------------------
 
                         int staffId = rs.getInt("staff_id");
                         if (!rs.wasNull()) {

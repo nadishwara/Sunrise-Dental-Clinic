@@ -6,9 +6,11 @@ package view.adminView;
 
 import DAO.ReportDAO;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.jfree.chart.ChartFactory;
@@ -17,6 +19,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import util.ReportExporter;
 
 /**
  *
@@ -83,7 +86,7 @@ public class reportAnalysis extends javax.swing.JPanel {
             );
 
             ChartPanel barChartPanel = new ChartPanel(barChart);
-            barChartPanel.setPreferredSize(new java.awt.Dimension(280, 200));
+            barChartPanel.setPreferredSize(new Dimension(280, 200));
 
             pnlBarChart.setLayout(new BorderLayout());
             pnlBarChart.removeAll();
@@ -492,12 +495,13 @@ public class reportAnalysis extends javax.swing.JPanel {
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(10, 10, 10)
-                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(csvExportButton)
-                        .addComponent(pdfExportButton)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel5Layout.createSequentialGroup()
                             .addGap(7, 7, 7)
-                            .addComponent(jLabel9)))
+                            .addComponent(jLabel9))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(csvExportButton)
+                            .addComponent(pdfExportButton)))
                     .addGap(10, 10, 10)
                     .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel10)
@@ -543,9 +547,9 @@ public class reportAnalysis extends javax.swing.JPanel {
 
             boolean success = util.ReportExporter.exportTableToPDF(reportTable, filePath, "Sunrise Dental Clinic - Bill & Treatment Report");
             if (success) {
-                javax.swing.JOptionPane.showMessageDialog(this, "PDF Report exported successfully!");
+                JOptionPane.showMessageDialog(this, "PDF Report exported successfully!");
             } else {
-                javax.swing.JOptionPane.showMessageDialog(this, "Failed to export PDF Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to export PDF Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_pdfExportButtonActionPerformed
@@ -562,9 +566,9 @@ public class reportAnalysis extends javax.swing.JPanel {
 
             boolean success = util.ReportExporter.exportTableToCSV(reportTable, filePath);
             if (success) {
-                javax.swing.JOptionPane.showMessageDialog(this, "CSV Report exported successfully!");
+                JOptionPane.showMessageDialog(this, "CSV Report exported successfully!");
             } else {
-                javax.swing.JOptionPane.showMessageDialog(this, "Failed to export CSV Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to export CSV Report.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_csvExportButtonActionPerformed
@@ -573,21 +577,21 @@ public class reportAnalysis extends javax.swing.JPanel {
         // TODO add your handling code here:
         DAO.ReportDAO reportDAO = new DAO.ReportDAO();
         DefaultTableModel model = reportDAO.getReceptionistExportData();
-        util.ReportExporter.exportModelToCSV(model, "Receptionist_Activity_Report");
+        ReportExporter.exportModelToCSV(model, "Receptionist_Activity_Report");
     }//GEN-LAST:event_receptionistDetailsExportCSVButtonActionPerformed
 
     private void patientAllDetailsExporCSVButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patientAllDetailsExporCSVButtonActionPerformed
         // TODO add your handling code here:
         DAO.ReportDAO reportDAO = new ReportDAO();
         DefaultTableModel model = reportDAO.getPatientExportData();
-        util.ReportExporter.exportModelToCSV(model, "Patient_All_Details_Report");
+        ReportExporter.exportModelToCSV(model, "Patient_All_Details_Report");
     }//GEN-LAST:event_patientAllDetailsExporCSVButtonActionPerformed
 
     private void receptionistDetailsExportCSVButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receptionistDetailsExportCSVButton1ActionPerformed
         // TODO add your handling code here:
         DAO.ReportDAO reportDAO = new ReportDAO();
         DefaultTableModel model = reportDAO.getDentistExportData();
-        util.ReportExporter.exportModelToCSV(model, "Dentist_Activity_Report");
+        ReportExporter.exportModelToCSV(model, "Dentist_Activity_Report");
     }//GEN-LAST:event_receptionistDetailsExportCSVButton1ActionPerformed
 
 
