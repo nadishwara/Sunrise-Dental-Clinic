@@ -32,10 +32,10 @@ public class UserProfileUpdateF extends javax.swing.JFrame {
     private UserProfile parentPanel;
 
     public UserProfileUpdateF() {
-        this(null);
+        this(null, null);
     }
 
-    public UserProfileUpdateF(UserProfile parentPanel) {
+    public UserProfileUpdateF(java.awt.Frame parent, UserProfile parentPanel) {
         this.parentPanel = parentPanel;
         initComponents();
 
@@ -183,9 +183,9 @@ public class UserProfileUpdateF extends javax.swing.JFrame {
                     .addComponent(jLabel4)
                     .addComponent(usernameUpdateTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(10, 10, 10)
-                .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(contactNoUpdateTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(contactNoUpdateTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
                 .addGap(10, 10, 10)
                 .addGroup(roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)

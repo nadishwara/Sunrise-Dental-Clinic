@@ -4,32 +4,20 @@
  */
 package view.forms;
 
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.ScrollPane;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
+
 /**
  *
  * @author nadis
  */
 public class ReceptionHelpF extends javax.swing.JFrame {
 
-    /**
-     * Creates new form ReceptionHelpF
-     */
-    
     private JScrollPane scrollPane;
     private int mouseX, mouseY;
-    
     private int activeSection = 1;
-    
+
     /**
      * Creates new form ReceptionHelpF
      */
@@ -53,18 +41,12 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         jPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
             public void mouseDragged(java.awt.event.MouseEvent evt) {
-                int x = evt.getXOnScreen();
-                int y = evt.getXOnScreen();
                 setLocation(evt.getXOnScreen() - mouseX, evt.getYOnScreen() - mouseY);
             }
         });
     }
     
     private void initExpandableFeature() {
-        jLabel1.setVisible(false);
-        headingLabel.setVisible(false);
-        stepsLabel.setVisible(false);
-
         scrollPane = new JScrollPane(jPanel1);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -81,68 +63,86 @@ public class ReceptionHelpF extends javax.swing.JFrame {
     }
 
     private void toggleContent(int sectionId) {
-        if (activeSection == sectionId) {
-            activeSection = 0;
-            jLabel1.setVisible(false);
-            headingLabel.setVisible(false);
-            stepsLabel.setVisible(false);
-        } else {
-            activeSection = sectionId;
-            jLabel1.setVisible(true);
-            headingLabel.setVisible(true);
-            stepsLabel.setVisible(true);
+        activeSection = sectionId;
+        
+        // Ensure labels are visible
+        jLabel1.setVisible(true);
+        headingLabel.setVisible(true);
+        stepsLabel.setVisible(true);
 
-            if (sectionId == 1) {
-                headingLabel.setText("Schedule New Appointment.");
-                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/Screenshot 2026-08-18 150149.png")));
-                stepsLabel.setText("<html>" +
-                    "step 1. Patient Name: Enter the patient's full name into the text field.<br>" +
-                    "step 2. Address: Provide the residential address of the patient.<br>" +
-                    "step 3. Contact number: Enter the primary phone number for communication.<br>" +
-                    "step 4. Whatsapp number: Type the WhatsApp-enabled contact number.<br>" +
-                    "step 5. Assign Dentist name: Select the appropriate dentist from the dropdown menu.<br>" +
-                    "step 6. Treatment type: Choose the required dental treatment category.<br>" +
-                    "step 7. Appointment Date: Pick the preferred date using the calendar/date field.<br>" +
-                    "step 8. Time: Select the available time slot from the dropdown options.<br>" +
-                    "step 9. Save: Click the green 'Save' button to register the appointment into the system." +
-                    "</html>");
-            } else if (sectionId == 2) {
-                headingLabel.setText("Schedule New Appointment.");
-                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/image 5.png")));
-                stepsLabel.setText("<html>" +
-                    "step 1: Click Patient Request from the side bar.<br>" +
-                    "step 2: Review the patient requests list in the table with details like Req ID,<br> Patient ID, Name, Email, Date, Slot, Notes, and Status.<br>" +
-                    "step 3: To process a request, select the specific patient row from the table.<br>" +
-                    "    ---- Confirm Request: Click the 'Confirm Request' button to approve a pending request ---- <br>" +
-                    "    ---- Reject Request: Click the 'Reject Request' button to decline the request ---- <br>" +
-                    "step 4: Schedule Appointment: Click 'Schedule Appointment' <br>to open the appointment scheduling window.<br>" +
-                    "    ---- Patient Id: Automatically filled from the selected request ---- <br>" +
-                    "    ---- Patient Name: Displays the patient's name ---- <br>" +
-                    "    ---- Select Dentist: Choose the appropriate dentist and specialty from the dropdown ---- <br>" +
-                    "    ---- Appointment Date: Pick the date using the interactive calendar picker ---- <br>" +
-                    "    ---- Time Slot: Select the available time slot from the dropdown options ---- " +
-                    "</html>");
-            } else if (sectionId == 3) {
-                headingLabel.setText("Billing & Invoices.");
-                jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen shots/image 3.png")));
-                stepsLabel.setText("<html>" +
-                    "step 1: Click Billing from the side bar to open the Billing & <br>Invoice Management module.<br>" +
-                    "step 2: Search and Select Appointment: Use the search bar or select <br>an appointment record from the top table (displays Appt ID, Appt Custom ID, Patient Name, Patient Custom ID, and Date).<br>" +
-                    "step 3: Patient & Doctor Info: Review the populated patient details <br>(Name, ID, Phone, Age) and appointment info.<br>" +
-                    "step 4: Clinical Summary: Check the treatments received, tooth<br> number, X-rays taken, issued prescriptions, and doctor's clinical notes.<br>" +
-                    "step 5: Invoice Calculation: Review and input charges for Fee 1,<br> Treatment cost, X-ray Fee 3, Consultation Fee, Other Charges, and apply any discounts (-).<br>" +
-                    "step 6: Select Payment Method: Choose either 'Cash' or 'Card' as the<br> payment option.<br>" +
-                    "step 7: Save or Print: Click 'Update Bill' to save changes or 'Print Bill' <br>to generate the final receipt." +
-                    "</html>");
+        if (sectionId == 1) {
+            headingLabel.setText("Schedule New Appointment");
+            try {
+                java.net.URL imgUrl = getClass().getResource("/screen shots/Screenshot 2026-08-18 150149.png");
+                if (imgUrl != null) {
+                    jLabel1.setIcon(new javax.swing.ImageIcon(imgUrl));
+                } else {
+                    jLabel1.setIcon(null); // Prevents crash if image is missing
+                }
+            } catch (Exception e) {
+                jLabel1.setIcon(null);
             }
+            
+            stepsLabel.setText("<html><body style='width: 400px; font-family: Segoe UI; font-size: 13px; color: #FFFFFF;'>" +
+                "<b>Step 1. Patient Name:</b> Enter the patient's full name into the text field.<br>" +
+                "<b>Step 2. Address:</b> Provide the residential address of the patient.<br>" +
+                "<b>Step 3. Contact number:</b> Enter the primary phone number for communication.<br>" +
+                "<b>Step 4. Whatsapp number:</b> Type the WhatsApp-enabled contact number.<br>" +
+                "<b>Step 5. Assign Dentist name:</b> Select the appropriate dentist from the dropdown menu.<br>" +
+                "<b>Step 6. Treatment type:</b> Choose the required dental treatment category.<br>" +
+                "<b>Step 7. Appointment Date:</b> Pick the preferred date using the calendar/date field.<br>" +
+                "<b>Step 8. Time:</b> Select the available time slot from the dropdown options.<br>" +
+                "<b>Step 9. Save:</b> Click the green 'Save' button to register the appointment into the system." +
+                "</body></html>");
+                
+        } else if (sectionId == 2) {
+            headingLabel.setText("Manage Patient Requests");
+            try {
+                java.net.URL imgUrl = getClass().getResource("/screen shots/image 5.png");
+                if (imgUrl != null) {
+                    jLabel1.setIcon(new javax.swing.ImageIcon(imgUrl));
+                } else {
+                    jLabel1.setIcon(null);
+                }
+            } catch (Exception e) {
+                jLabel1.setIcon(null);
+            }
+            
+            stepsLabel.setText("<html><body style='width: 400px; font-family: Segoe UI; font-size: 13px; color: #FFFFFF;'>" +
+                "<b>Step 1:</b> Click Patient Request from the side bar.<br>" +
+                "<b>Step 2:</b> Review the patient requests list in the table with details.<br>" +
+                "<b>Step 3:</b> To process a request, select the specific patient row from the table.<br>" +
+                "&nbsp;&nbsp;&bull; <i>Confirm Request:</i> Click to approve a pending request.<br>" +
+                "&nbsp;&nbsp;&bull; <i>Reject Request:</i> Click to decline the request.<br>" +
+                "<b>Step 4:</b> Click 'Schedule Appointment' to open the appointment window." +
+                "</body></html>");
+                
+        } else if (sectionId == 3) {
+            headingLabel.setText("Billing & Invoices Management");
+            try {
+                java.net.URL imgUrl = getClass().getResource("/screen shots/image 3.png");
+                if (imgUrl != null) {
+                    jLabel1.setIcon(new javax.swing.ImageIcon(imgUrl));
+                } else {
+                    jLabel1.setIcon(null);
+                }
+            } catch (Exception e) {
+                jLabel1.setIcon(null);
+            }
+            
+            stepsLabel.setText("<html><body style='width: 400px; font-family: Segoe UI; font-size: 13px; color: #FFFFFF;'>" +
+                "<b>Step 1:</b> Click Billing from the side bar to open the module.<br>" +
+                "<b>Step 2:</b> Use the search bar or select an appointment record from the table.<br>" +
+                "<b>Step 3:</b> Review populated patient details and clinical notes.<br>" +
+                "<b>Step 4:</b> Input charges and apply any discounts (-).<br>" +
+                "<b>Step 5:</b> Choose either 'Cash' or 'Card' as the payment option.<br>" +
+                "<b>Step 6:</b> Click 'Update Bill' or 'Print Bill' to generate the receipt." +
+                "</body></html>");
         }
 
         jPanel1.revalidate();
         jPanel1.repaint();
-    }
-    
-    
-    
+    }    
     private void makeCornersRounded() {
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -152,23 +152,6 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         });
     }
 
-//    private void toggleContent() {
-//        isExpanded = !isExpanded;
-//        if (isExpanded) {
-//            jPanel1.add(dynamicContentPanel);
-//            dynamicContentPanel.setVisible(true);
-//        } else {
-//            dynamicContentPanel.setVisible(false);
-//            jPanel1.remove(dynamicContentPanel);
-//        }
-//        jPanel1.revalidate();
-//        jPanel1.repaint();
-//    }
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -280,7 +263,7 @@ public class ReceptionHelpF extends javax.swing.JFrame {
             roundedPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(roundedPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(roundedPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(roundedPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addComponent(arroeDownButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -388,44 +371,35 @@ public class ReceptionHelpF extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
+    private void jPanel1MousePressed(java.awt.event.MouseEvent evt) {
         // TODO add your handling code here:
-        this.dispose();
-    }//GEN-LAST:event_jLabel2MouseClicked
+    }
 
-    private void jMiniMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMiniMouseClicked
-        // TODO add your handling code here:
+    private void jMiniMouseClicked(java.awt.event.MouseEvent evt) {
         this.setState(javax.swing.JFrame.ICONIFIED);
-    }//GEN-LAST:event_jMiniMouseClicked
+    }
 
-    private void arroeDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arroeDownButtonActionPerformed
-        // TODO add your handling code here:
-        toggleContent(1);
-    }//GEN-LAST:event_arroeDownButtonActionPerformed
+    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {
+        this.dispose();
+    }
 
-    private void arroeDownButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arroeDownButton1ActionPerformed
-        // TODO add your handling code here:
+    private void arroeDownButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         toggleContent(2);
-    }//GEN-LAST:event_arroeDownButton1ActionPerformed
+    }
 
-    private void arroeDownButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arroeDownButton2ActionPerformed
-        // TODO add your handling code here:
+    private void arroeDownButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        toggleContent(1);
+    }
+
+    private void arroeDownButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         toggleContent(3);
-    }//GEN-LAST:event_arroeDownButton2ActionPerformed
-
-    private void jPanel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MousePressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jPanel1MousePressed
+    }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -433,16 +407,9 @@ public class ReceptionHelpF extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ReceptionHelpF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ReceptionHelpF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ReceptionHelpF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ReceptionHelpF.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

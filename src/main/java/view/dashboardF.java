@@ -47,17 +47,14 @@ public class dashboardF extends javax.swing.JFrame {
     public dashboardF() {
         initComponents();
         setResizable(true);
-//        setSize(1100, 680);
         makeCornersRounded();
         init();
-//        setDefaultWindowSize();
     }
 
     public dashboardF(User user) {
         this.loggedInUser = user;
         initComponents();
         setResizable(true);
-//        setDefaultWindowSize();
         makeCornersRounded();
         init();
         if (user != null) {
@@ -76,109 +73,111 @@ public class dashboardF extends javax.swing.JFrame {
                 }
             }
         });
-//        panelBorder1.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 3, 3, new java.awt.Color(210, 210, 210)));
     }
 
     private void init() {
-    setLocationRelativeTo(null);
-    menu1.initMoving(this);
+        setLocationRelativeTo(null);
+        menu1.initMoving(this);
 
-    cardLayout = new CardLayout();
-    mainPanel = new JPanel(cardLayout);
-    mainPanel.setOpaque(false);
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+        mainPanel.setOpaque(false);
 
-    panelBorder1.setLayout(new java.awt.BorderLayout());
-    panelBorder1.add(menu1, java.awt.BorderLayout.WEST);
-    panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
+        panelBorder1.setLayout(new java.awt.BorderLayout());
+        panelBorder1.add(menu1, java.awt.BorderLayout.WEST);
+        panelBorder1.add(mainPanel, java.awt.BorderLayout.CENTER);
 
-    patientRequestView = new view.forms.PatientRequestForm();
+        initViews();
 
-    initViews();
+        menu1.addEventMenuSelected(new swing.EventMenuSelected() {
+            @Override
+            public void selected(int index) {
+                User currentUser = menu1.getLoggedInUser() != null ? menu1.getLoggedInUser() : loggedInUser;
+                String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
 
-    menu1.addEventMenuSelected(new swing.EventMenuSelected() {
-        @Override
-        public void selected(int index) {
-            User currentUser = menu1.getLoggedInUser() != null ? menu1.getLoggedInUser() : loggedInUser;
-            String role = (currentUser != null && currentUser.getRole() != null) ? currentUser.getRole() : "";
+                boolean isAdmin = "ADMIN".equalsIgnoreCase(role.trim());
+                boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
+                boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
+                boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
 
-            boolean isAdmin = "ADMIN".equalsIgnoreCase(role.trim());
-            boolean isReceptionist = "RECEPTIONIST".equalsIgnoreCase(role.trim());
-            boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
-            boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
+                int logoutIndex = isReceptionist ? 5 : (isAdmin ? 3 : 4);
 
-            // Adjusted logout index: Receptionist = 5, Admin = 3, Dentist/Patient = 4
-            int logoutIndex = isReceptionist ? 5 : (isAdmin ? 3 : 4);
-
-            if (index == logoutIndex) {
-                int opt = JOptionPane.showConfirmDialog(
-                        null,
-                        "Are you sure you want to Logout?",
-                        "Logout Confirmation",
-                        JOptionPane.YES_NO_OPTION
-                );
-                if (opt == JOptionPane.YES_OPTION) {
-                    new loginF().setVisible(true);
-                    dispose();
-                }
-                return;
-            }
-
-            if (index == 0) {
-                // Admin, Receptionist, and Dentist all load ANALYTICS_HOME on Dashboard click
-                if (isAdmin || isReceptionist || isDentist) {
-                    cardLayout.show(mainPanel, "ANALYTICS_HOME");
-                } else {
-                    cardLayout.show(mainPanel, "HOME");
-                }
-            } else if (index == 1) {
-                cardLayout.show(mainPanel, "PROFILE");
-            } else if (index == 2) {
-                if (isAdmin) {
-                    // Admin clicking index 2 opens Report Analysis
-                    cardLayout.show(mainPanel, "REPORT_ANALYSIS");
-                } else if (isReceptionist) {
-                    cardLayout.show(mainPanel, "NEW_BOOKING");
-                } else if (isPatient) {
-                    cardLayout.show(mainPanel, "MEDICAL_HISTORY");
-                } else if (isDentist) {
-                    cardLayout.show(mainPanel, "MANAGE_PATIENTS");
-                } else {
-                    cardLayout.show(mainPanel, "PATIENTS_GENERAL");
-                }
-            } else if (index == 3) {
-                if (isReceptionist) {
-                    patientRequestView.loadTableData();
-                    cardLayout.show(mainPanel, "PATIENT_REQUEST");
-                } else if (isPatient) {
-                    cardLayout.show(mainPanel, "BILLING_PAYMENTS");
-                } else if (isDentist) {
-                    if (dailyAppointmentView != null) {
-                        dailyAppointmentView.loadDailySchedule();
+                if (index == logoutIndex) {
+                    int opt = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to Logout?",
+                            "Logout Confirmation",
+                            JOptionPane.YES_NO_OPTION
+                    );
+                    if (opt == JOptionPane.YES_OPTION) {
+                        new loginF().setVisible(true);
+                        dispose();
                     }
-                    cardLayout.show(mainPanel, "DAILY_SCHEDULE");
+                    return;
                 }
-            } else if (index == 4 && isReceptionist) {
-                cardLayout.show(mainPanel, "PATIENT_BILLING");
+
+                if (index == 0) {
+                    if (isAdmin || isReceptionist || isDentist) {
+                        cardLayout.show(mainPanel, "ANALYTICS_HOME");
+                    } else {
+                        cardLayout.show(mainPanel, "HOME");
+                    }
+                } else if (index == 1) {
+                    if (currentUser != null && userProfileView != null) {
+                        userProfileView.setUserData(currentUser);
+                    }
+                    cardLayout.show(mainPanel, "PROFILE");
+                } else if (index == 2) {
+                    if (isAdmin) {
+                        cardLayout.show(mainPanel, "REPORT_ANALYSIS");
+                    } else if (isReceptionist) {
+                        cardLayout.show(mainPanel, "NEW_BOOKING");
+                    } else if (isPatient) {
+                        cardLayout.show(mainPanel, "MEDICAL_HISTORY");
+                    } else if (isDentist) {
+                        cardLayout.show(mainPanel, "MANAGE_PATIENTS");
+                    } else {
+                        cardLayout.show(mainPanel, "PATIENTS_GENERAL");
+                    }
+                } else if (index == 3) {
+                    if (isReceptionist) {
+                        if (patientRequestView != null) {
+                            patientRequestView.loadTableData();
+                        }
+                        cardLayout.show(mainPanel, "PATIENT_REQUEST");
+                    } else if (isPatient) {
+                        cardLayout.show(mainPanel, "BILLING_PAYMENTS");
+                    } else if (isDentist) {
+                        if (dailyAppointmentView != null) {
+                            dailyAppointmentView.loadDailySchedule();
+                        }
+                        cardLayout.show(mainPanel, "DAILY_SCHEDULE");
+                    }
+                } else if (index == 4 && isReceptionist) {
+                    cardLayout.show(mainPanel, "PATIENT_BILLING");
+                }
+               
+                mainPanel.revalidate();
+                mainPanel.repaint();
             }
+        });
+
+        // Default view when dashboard opens
+        String role = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
+        if ("ADMIN".equalsIgnoreCase(role.trim()) || "RECEPTIONIST".equalsIgnoreCase(role.trim()) || "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim())) {
+            cardLayout.show(mainPanel, "ANALYTICS_HOME");
+        } else {
+            cardLayout.show(mainPanel, "HOME");
         }
-    });
 
-    // Default view when login frame opens
-    String role = (loggedInUser != null && loggedInUser.getRole() != null) ? loggedInUser.getRole() : "";
-    if ("ADMIN".equalsIgnoreCase(role.trim()) || "RECEPTIONIST".equalsIgnoreCase(role.trim()) || "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim())) {
-        cardLayout.show(mainPanel, "ANALYTICS_HOME");
-    } else {
-        cardLayout.show(mainPanel, "HOME");
+        if (loggedInUser != null) {
+            String username = loggedInUser.getUsername();
+            String userRole = loggedInUser.getRole();
+            menu1.setUserProfile(username, userRole);
+        } else {
+            menu1.setUserProfile("Guest User", "N/A");
+        }
     }
-
-    if (loggedInUser != null) {
-        String username = loggedInUser.getUsername();
-        String userRole = loggedInUser.getRole();
-        menu1.setUserProfile(username, userRole);
-    } else {
-        menu1.setUserProfile("Guest User", "N/A");
-    }
-}
 
     private void initViews() {
         userProfileView = new view.forms.UserProfile();
@@ -266,7 +265,7 @@ public class dashboardF extends javax.swing.JFrame {
             mainPanel.add(patientBillingView, "PATIENT_BILLING");
         }
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

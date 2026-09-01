@@ -36,6 +36,7 @@ public class UserProfile extends javax.swing.JPanel {
         roundedProfileLabel = new RoundedImageIconLabel();
         roundedProfileLabel.setBounds(jLabel1.getBounds());
         roundedProfileLabel.setSize(jLabel1.getSize());
+        roundedProfileLabel.setIcon(jLabel1.getIcon());
 
         Container parent = jLabel1.getParent();
         if (parent != null) {
@@ -92,8 +93,8 @@ public class UserProfile extends javax.swing.JPanel {
                     int height = roundedProfileLabel.getHeight();
 
                     if (width <= 0 || height <= 0) {
-                        width = jLabel1.getWidth() > 0 ? jLabel1.getWidth() : 120;
-                        height = jLabel1.getHeight() > 0 ? jLabel1.getHeight() : 120;
+                        width = 150;
+                        height = 150;
                     }
 
                     Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
@@ -325,10 +326,13 @@ public class UserProfile extends javax.swing.JPanel {
             return;
         }
 
-        UserProfileUpdateF updateFrame = new UserProfileUpdateF(this);
+        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = (win instanceof java.awt.Frame) ? (java.awt.Frame) win : null;
+
+        UserProfileUpdateF updateFrame = new UserProfileUpdateF(parentFrame, this);
         updateFrame.setUser(currentUser);
+        updateFrame.setLocationRelativeTo(parentFrame);
         updateFrame.setVisible(true);
-        updateFrame.setLocationRelativeTo(null);
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void usernameLableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_usernameLableMouseClicked
