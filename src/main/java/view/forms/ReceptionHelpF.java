@@ -77,7 +77,7 @@ public class ReceptionHelpF extends javax.swing.JFrame {
                 if (imgUrl != null) {
                     jLabel1.setIcon(new javax.swing.ImageIcon(imgUrl));
                 } else {
-                    jLabel1.setIcon(null); // Prevents crash if image is missing
+                    jLabel1.setIcon(null); 
                 }
             } catch (Exception e) {
                 jLabel1.setIcon(null);

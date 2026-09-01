@@ -6,6 +6,7 @@ package view.forms;
 
 import DAO.UserDAO;
 import java.awt.Image;
+import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.nio.file.Files;
 import javax.swing.ImageIcon;
@@ -38,6 +39,7 @@ public class UserProfileUpdateF extends javax.swing.JFrame {
     public UserProfileUpdateF(java.awt.Frame parent, UserProfile parentPanel) {
         this.parentPanel = parentPanel;
         initComponents();
+        makeCornersRounded();
 
         roundedProfileLabel = new RoundedImageIconLabel();
         roundedProfileLabel.setBounds(profileImageLabel.getBounds());
@@ -82,6 +84,15 @@ public class UserProfileUpdateF extends javax.swing.JFrame {
                 }
             }
         }
+    }
+    
+    private void makeCornersRounded() {
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 25, 25));
+            }
+        });
     }
 
     /**
