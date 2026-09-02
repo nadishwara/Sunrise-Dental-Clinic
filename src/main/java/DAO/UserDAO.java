@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import model.User;
 import util.IdGenerator;
@@ -14,10 +16,11 @@ import util.IdGenerator;
 public class UserDAO {
 
     public boolean isUsernameExists(String username) {
-        if (username == null || username.trim().isEmpty()) return false;
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
         String sql = "SELECT user_id FROM users WHERE username = ?";
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username.trim());
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -29,10 +32,11 @@ public class UserDAO {
     }
 
     public boolean isEmailExists(String email) {
-        if (email == null || email.trim().isEmpty()) return false;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
         String sql = "SELECT user_id FROM users WHERE email = ?";
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email.trim());
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -44,10 +48,11 @@ public class UserDAO {
     }
 
     public boolean isEmailExistsForOtherUser(String email, int currentUserId) {
-        if (email == null || email.trim().isEmpty()) return false;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
         String sql = "SELECT user_id FROM users WHERE email = ? AND user_id != ?";
-        try (Connection conn = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email.trim());
             stmt.setInt(2, currentUserId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -157,15 +162,14 @@ public class UserDAO {
         }
 
         String sql = "SELECT u.*, s.staff_id, s.full_name, "
-                   + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
-                   + "FROM users u "
-                   + "LEFT JOIN staff s ON u.user_id = s.user_id "
-                   + "WHERE u.email = ?";
+                + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no "
+                + "FROM users u "
+                + "LEFT JOIN staff s ON u.user_id = s.user_id "
+                + "WHERE u.email = ?";
 
         User user = null;
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email.trim());
 
@@ -182,18 +186,23 @@ public class UserDAO {
                     }
 
                     if (isPasswordValid) {
+                        String accountStatus = rs.getString("status");
+                        if ("PENDING".equalsIgnoreCase(accountStatus)) {
+                            System.err.println("Login Error: Account is pending admin approval.");
+                            return null;
+                        }
                         user = new User();
                         user.setUserId(rs.getInt("user_id"));
                         user.setCustomId(rs.getString("custom_id"));
                         user.setUsername(rs.getString("username"));
                         user.setEmail(rs.getString("email"));
                         user.setRole(rs.getString("role"));
-                        user.setStatus(rs.getString("status"));
+                        user.setStatus(accountStatus);
 
                         user.setContactNo(rs.getString("final_contact_no"));
                         user.setWhatsappNo(rs.getString("whatsapp_no"));
                         user.setAddress(rs.getString("address"));
-                        
+
                         String dbImg = rs.getString("profile_image");
                         System.out.println("DEBUG [authenticateUser] - DB Profile Image Path: " + dbImg);
                         user.setProfileImage(dbImg);
@@ -213,7 +222,9 @@ public class UserDAO {
     }
 
     public User getUserById(int userId) {
-        if (userId <= 0) return null;
+        if (userId <= 0) {
+            return null;
+        }
 
         String sql = "SELECT u.*, s.full_name, "
                 + "COALESCE(u.contact_no, s.contact_no) AS final_contact_no, "
@@ -223,8 +234,7 @@ public class UserDAO {
                 + "WHERE u.user_id = ?";
         User user = null;
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -240,7 +250,7 @@ public class UserDAO {
                     user.setContactNo(rs.getString("final_contact_no"));
                     user.setWhatsappNo(rs.getString("whatsapp_no"));
                     user.setAddress(rs.getString("address"));
-                    
+
                     // --- DEBUG PRINT ---
                     String dbImg = rs.getString("profile_image");
                     System.out.println("DEBUG [getUserById] - DB Profile Image Path: " + dbImg);
@@ -261,8 +271,7 @@ public class UserDAO {
 
         String sql = "UPDATE users SET username = ?, contact_no = ?, whatsapp_no = ?, address = ?, profile_image = ? WHERE user_id = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, user.getUsername() != null ? user.getUsername().trim() : "");
             stmt.setString(2, user.getContactNo());
@@ -277,5 +286,58 @@ public class UserDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<User> getPendingUsers() {
+        List<User> pendingList = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE UPPER(status) = 'PENDING'";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setCustomId(rs.getString("custom_id"));
+                user.setUsername(rs.getString("username"));
+                user.setEmail(rs.getString("email"));
+                user.setRole(rs.getString("role"));
+                user.setStatus(rs.getString("status"));
+                pendingList.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pendingList;
+    }
+
+    public boolean updateUserStatus(int userId, String newStatus) {
+        String sql = "UPDATE users SET status = ? WHERE user_id = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newStatus);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isAccountPending(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "SELECT status FROM users WHERE email = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String status = rs.getString("status");
+                    return "PENDING".equalsIgnoreCase(status);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

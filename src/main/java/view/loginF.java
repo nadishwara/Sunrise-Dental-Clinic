@@ -34,6 +34,7 @@ public class loginF extends javax.swing.JFrame {
             }
         });
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -208,43 +209,54 @@ public class loginF extends javax.swing.JFrame {
 
         if (email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(
-                this, 
-                "Please enter both Email and Password!", 
-                "Validation Error", 
-                JOptionPane.WARNING_MESSAGE
+                    this,
+                    "Please enter both Email and Password!",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE
             );
             return;
         }
 
         if (!InputValidator.isValidEmail(email)) {
             JOptionPane.showMessageDialog(
-                this, 
-                "Please enter a valid email address (e.g., user@example.com)!", 
-                "Validation Error", 
-                JOptionPane.WARNING_MESSAGE
+                    this,
+                    "Please enter a valid email address (e.g., user@example.com)!",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE
             );
             return;
         }
 
         if (!InputValidator.isValidPassword(password)) {
             JOptionPane.showMessageDialog(
-                this, 
-                "Password must be at least 6 characters long!", 
-                "Validation Error", 
-                JOptionPane.WARNING_MESSAGE
+                    this,
+                    "Password must be at least 6 characters long!",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE
             );
             return;
         }
 
         UserDAO userDAO = new UserDAO();
+
+        if (userDAO.isAccountPending(email)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Your registration request is still under process to be approved.",
+                    "Account Pending",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
         User loggedUser = userDAO.authenticateUser(email, password);
 
         if (loggedUser != null) {
             JOptionPane.showMessageDialog(
-                this, 
-                "Login Successful! Welcome " + loggedUser.getUsername() + " (" + loggedUser.getRole() + ")", 
-                "Success", 
-                JOptionPane.INFORMATION_MESSAGE
+                    this,
+                    "Login Successful! Welcome " + loggedUser.getUsername() + " (" + loggedUser.getRole() + ")",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE
             );
 
             dashboardF dashboard = new dashboardF(loggedUser);
@@ -253,10 +265,10 @@ public class loginF extends javax.swing.JFrame {
 
         } else {
             JOptionPane.showMessageDialog(
-                this, 
-                "Invalid Email or Password!", 
-                "Login Failed", 
-                JOptionPane.ERROR_MESSAGE
+                    this,
+                    "Invalid Email or Password!",
+                    "Login Failed",
+                    JOptionPane.ERROR_MESSAGE
             );
         }
     }//GEN-LAST:event_jButton1ActionPerformed

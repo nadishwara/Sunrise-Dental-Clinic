@@ -401,8 +401,16 @@ public class registerF extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Passwords do not match. Please try again.", "Validation Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        String initialStatus;
+        if (selectedRole.equalsIgnoreCase("PATIENT")) {
+            initialStatus = "ACTIVE";
+        } else {
+            initialStatus = "PENDING";
+        }
 
         User newUser = new User(username, email, password, selectedRole);
+        newUser.setStatus(initialStatus);
 
         if (selectedRole.equalsIgnoreCase("PATIENT")) {
             UserDAO userDAO = new UserDAO();
