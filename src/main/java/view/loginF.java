@@ -239,12 +239,22 @@ public class loginF extends javax.swing.JFrame {
 
         UserDAO userDAO = new UserDAO();
 
-        if (userDAO.isAccountPending(email)) {
+        String accountStatus = userDAO.getAccountStatus(email);
+
+        if ("PENDING".equalsIgnoreCase(accountStatus)) {
             JOptionPane.showMessageDialog(
                     this,
                     "Your registration request is still under process to be approved.",
                     "Account Pending",
                     JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        } else if ("REJECTED".equalsIgnoreCase(accountStatus)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Your account has been rejected by the administrator.",
+                    "Access Denied",
+                    JOptionPane.ERROR_MESSAGE
             );
             return;
         }

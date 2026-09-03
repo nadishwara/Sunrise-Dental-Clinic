@@ -41,6 +41,7 @@ public class dashboardF extends javax.swing.JFrame {
     private view.dentistViews.DailyAppointment dailyAppointmentView;
     private view.forms.PatientBilling patientBillingView;
     private reportAnalysis reportAnalysisView;
+    private view.adminView.UserManagement userManagementView;
 
     private view.dentistViews.ManagePatients managePatientView;
 
@@ -100,7 +101,7 @@ public class dashboardF extends javax.swing.JFrame {
                 boolean isPatient = "PATIENT".equalsIgnoreCase(role.trim());
                 boolean isDentist = "DENTIST".equalsIgnoreCase(role.trim()) || "DOCTOR".equalsIgnoreCase(role.trim());
 
-                int logoutIndex = isReceptionist ? 5 : (isAdmin ? 3 : 4);
+                int logoutIndex = isReceptionist ? 5 : (isAdmin ? 4 : 4);
 
                 if (index == logoutIndex) {
                     int opt = JOptionPane.showConfirmDialog(
@@ -140,7 +141,12 @@ public class dashboardF extends javax.swing.JFrame {
                         cardLayout.show(mainPanel, "PATIENTS_GENERAL");
                     }
                 } else if (index == 3) {
-                    if (isReceptionist) {
+                    if (isAdmin) {
+                        if (userManagementView != null) {
+                            userManagementView.loadStaffTableData();
+                        }
+                        cardLayout.show(mainPanel, "USER_MANAGEMENT");
+                    } else if (isReceptionist) {
                         if (patientRequestView != null) {
                             patientRequestView.loadTableData();
                         }
@@ -264,6 +270,10 @@ public class dashboardF extends javax.swing.JFrame {
         if (patientBillingView != null) {
             mainPanel.add(patientBillingView, "PATIENT_BILLING");
         }
+        userManagementView = new view.adminView.UserManagement();
+            if (userManagementView != null) {
+                mainPanel.add(userManagementView, "USER_MANAGEMENT");
+            }
     }
     
     /**

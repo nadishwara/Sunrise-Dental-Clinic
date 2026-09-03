@@ -187,10 +187,16 @@ public class UserDAO {
 
                     if (isPasswordValid) {
                         String accountStatus = rs.getString("status");
+                        
                         if ("PENDING".equalsIgnoreCase(accountStatus)) {
                             System.err.println("Login Error: Account is pending admin approval.");
                             return null;
                         }
+                        if ("REJECTED".equalsIgnoreCase(accountStatus)) {
+                            System.err.println("Login Error: Account has been rejected.");
+                            return null;
+                        }
+
                         user = new User();
                         user.setUserId(rs.getInt("user_id"));
                         user.setCustomId(rs.getString("custom_id"));
@@ -339,5 +345,78 @@ public class UserDAO {
             e.printStackTrace();
         }
         return false;
+    }
+    public List<User> getAllStaffUsers() {
+        List<User> staffList = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE UPPER(role) IN ('DENTIST', 'RECEPTIONIST', 'ADMIN')";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql); 
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setCustomId(rs.getString("custom_id"));
+                user.setUsername(rs.getString("username"));
+                user.setEmail(rs.getString("email"));
+                user.setRole(rs.getString("role"));
+                user.setStatus(rs.getString("status"));
+                staffList.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
+    }
+    
+    public String getAccountStatus(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT status FROM users WHERE email = ?";
+        try (Connection conn = DBConnection.getInstance().getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("status");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+   public List<User> searchStaffUsers(String keyword) {
+        List<User> staffList = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE UPPER(role) IN ('DENTIST', 'RECEPTIONIST', 'ADMIN') " +
+                     "AND (UPPER(username) LIKE ? OR UPPER(email) LIKE ? OR UPPER(role) LIKE ? OR UPPER(status) LIKE ?)";
+
+        try (Connection conn = DBConnection.getInstance().getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword.toUpperCase().trim() + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            stmt.setString(4, searchPattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = new User();
+                    user.setUserId(rs.getInt("user_id"));
+                    user.setCustomId(rs.getString("custom_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    staffList.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staffList;
     }
 }
